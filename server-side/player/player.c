@@ -136,3 +136,7 @@ void player_lock_mutex(PLAYER *player) {
 void player_unlock_mutex(PLAYER *player) {
     pthread_mutex_unlock(&player->mutex);
 }
+
+void player_destroy_void(void *player) {
+    player_destroy((PLAYER*)player);
+}

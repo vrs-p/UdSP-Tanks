@@ -12,4 +12,11 @@ typedef struct connection {
     sfIpAddress ipAddress;
 } CONNECTION;
 
+typedef enum message_types {
+    STATUS,
+    KILLED,
+    END,
+    PLAYER_QUIT
+} MESSAGE_TYPES;
+
 #endif //SERVER_SIDE_NETWORK_H

@@ -29,6 +29,7 @@ typedef struct player {
 
 void player_create(PLAYER* player, int id, char* playerName, float xPosition, float yPosition, DIRECTION direction, unsigned short port, sfIpAddress ipAddress);
 void player_destroy(PLAYER* player);
+void player_destroy_void(void* player);
 
 POSITION* player_get_position(PLAYER* player);
 CONNECTION* player_get_connection(PLAYER* player);
