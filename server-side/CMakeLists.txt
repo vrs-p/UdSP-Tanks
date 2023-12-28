@@ -12,8 +12,8 @@ add_executable(server_side main.c
         player/player.h
         application/application.c
         application/application.h
-        linked_list/linked_list.c
-        linked_list/linked_list.h
+        ../common/linked_list/linked_list.c
+        ../common/linked_list/linked_list.h
         application/application.c)
 
 target_link_libraries(server_side csfml-system csfml-network)

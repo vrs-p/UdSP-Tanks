@@ -6,7 +6,7 @@
 #define SERVER_SIDE_APPLICATION_H
 
 #include <stdbool.h>
-#include "../linked_list/linked_list.h"
+#include "../../common/linked_list/linked_list.h"
 #include "../player/player.h"
 
 typedef struct application {
