@@ -48,5 +48,6 @@ void ls_iterator_init(LINKED_LIST_ITERATOR* self, LINKED_LIST* list);
 void ls_iterator_destroy(LINKED_LIST_ITERATOR* self);
 _Bool ls_iterator_has_next(LINKED_LIST_ITERATOR* self);
 void* ls_iterator_move_next(LINKED_LIST_ITERATOR* self);
+void ls_iterator_reset(LINKED_LIST_ITERATOR* self);
 
 #endif //SERVER_SIDE_LINKED_LIST_H

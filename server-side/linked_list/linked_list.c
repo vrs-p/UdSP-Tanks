@@ -212,3 +212,7 @@ void ls_run_function(LINKED_LIST *self, void (*function)(void *)) {
         function((void**)item);
     }
 }
+
+void ls_iterator_reset(LINKED_LIST_ITERATOR *self) {
+    ls_iterator_init(self, self->list);
+}
