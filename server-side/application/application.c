@@ -251,6 +251,10 @@ void app_initialize_socket(APPLICATION *app) {
     app->ipAddress = sfIpAddress_fromString("0.0.0.0");
 
     app->socket = sfUdpSocket_create();
+    if (sfUdpSocket_bind(app->socket, 13877, app->ipAddress) != sfSocketDone) {
+        printf("Cannot binf port 13877\n");
+        return;
+    }
 }
 
 void app_wait_for_clients(APPLICATION *app) {
