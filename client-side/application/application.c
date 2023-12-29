@@ -140,7 +140,7 @@ void app_wait_for_game_settings(APPLICATION* app) {
     unsigned short port;
     int pID, dir;
     float posX, posY;
-    char* name;
+    char name[50];
 
     sfPacket_clear(packetReceive);
 
@@ -233,7 +233,7 @@ void app_read_client_input(APPLICATION* app) {
             tank_set_left(app->clientTank, true);
             pthread_mutex_lock(app->mutex);
             app->sendDataBool = true;
-            pthread_cond_broadcast(app->sendDataCond);
+            pthread_cond_signal(app->sendDataCond);
             pthread_mutex_unlock(app->mutex);
         } else if (event.type == sfEvtKeyPressed) {
             switch (event.key.code) {
@@ -267,7 +267,7 @@ void app_read_client_input(APPLICATION* app) {
 
             pthread_mutex_lock(app->mutex);
             app->sendDataBool = true;
-            pthread_cond_broadcast(app->sendDataCond);
+            pthread_cond_signal(app->sendDataCond);
             pthread_mutex_unlock(app->mutex);
         }
     }
@@ -459,12 +459,12 @@ void app_draw(APPLICATION* app) {
 
     tank_render(app->clientTank, app->window, map_get_list_of_walls(app->map));
 
-    float tankPosX = sfSprite_getPosition(tank_get_sprite(app->clientTank)).x;
-    float tankPosY = sfSprite_getPosition(tank_get_sprite(app->clientTank)).y;
-    float tankSizeX = (float)sfTexture_getSize(sfSprite_getTexture(tank_get_sprite(app->clientTank))).x
-                      * sfSprite_getScale(tank_get_sprite(app->clientTank)).x;
-    float tankSizeY = (float)sfTexture_getSize(sfSprite_getTexture(tank_get_sprite(app->clientTank))).y
-                      * sfSprite_getScale(tank_get_sprite(app->clientTank)).y;
+//    float tankPosX = sfSprite_getPosition(tank_get_sprite(app->clientTank)).x;
+//    float tankPosY = sfSprite_getPosition(tank_get_sprite(app->clientTank)).y;
+//    float tankSizeX = (float)sfTexture_getSize(sfSprite_getTexture(tank_get_sprite(app->clientTank))).x
+//                      * sfSprite_getScale(tank_get_sprite(app->clientTank)).x;
+//    float tankSizeY = (float)sfTexture_getSize(sfSprite_getTexture(tank_get_sprite(app->clientTank))).y
+//                      * sfSprite_getScale(tank_get_sprite(app->clientTank)).y;
 
 //    switch (tank_get_direction(app->clientTank)) {
 //        case UP: {
@@ -676,9 +676,7 @@ void* app_receive_data(void* application) {
 
 void* app_send_data(void* application) {
     APPLICATION* app = application;
-//    sfPacket* packetReceive = sfPacket_create();
     sfPacket* packetSend = sfPacket_create();
-    sfIpAddress ipAddress = sfIpAddress_Any;
     float posX, posY;
     bool continueWithSending = true;
 
@@ -687,6 +685,7 @@ void* app_send_data(void* application) {
         while (!app->sendDataBool) {
             pthread_cond_wait(app->sendDataCond, app->mutex);
         }
+        pthread_mutex_unlock(app->mutex);
 
         if (app->window != NULL && app->clientTank != NULL) {
             sfPacket_clear(packetSend);
@@ -713,7 +712,7 @@ void* app_send_data(void* application) {
                 sfPacket_writeBool(packetSend, bullet_was_fired(tank_get_bullet(app->clientTank)) &&
                                     !bullet_was_fired_and_sent(tank_get_bullet(app->clientTank)));
 
-                if (!bullet_was_fired(tank_get_bullet(app->clientTank)) &&
+                if (bullet_was_fired(tank_get_bullet(app->clientTank)) &&
                     !bullet_was_fired_and_sent(tank_get_bullet(app->clientTank))) {
                     bullet_set_was_fired_and_sent(tank_get_bullet(app->clientTank));
                 }

@@ -21,6 +21,9 @@ void tank_create(TANK *tank) {
     tank->direction = UP;
 
     tank->lastFire = time(NULL);
+
+    tank->mutex = malloc(sizeof(pthread_mutex_t));
+    pthread_mutex_init(tank->mutex, NULL);
 }
 
 void tank_destroy(TANK *tank) {

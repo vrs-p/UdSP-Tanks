@@ -77,7 +77,7 @@ void* app_send_data(void *app) {
                         sfPacket_writeFloat(appl->packetSend, player_get_position(playerInfo)->xPosition);
                         sfPacket_writeFloat(appl->packetSend, player_get_position(playerInfo)->yPosition);
                         sfPacket_writeInt32(appl->packetSend, (int)player_get_position(playerInfo)->direction);
-                        sfPacket_writeInt32(appl->packetSend, (int)player_fired_get(playerInfo));
+                        sfPacket_writeBool(appl->packetSend, player_fired_get(playerInfo));
 
                         player_unlock_mutex(playerInfo);
                     }
@@ -134,15 +134,14 @@ void* app_send_data(void *app) {
 
                 sfUdpSocket_sendPacket(appl->socket, appl->packetSend, player_get_connection(player)->ipAddress, player_get_connection(player)->port);
             }
-
-            ls_iterator_reset(&iteratorInfo);
-            while (ls_iterator_has_next(&iteratorInfo)) {
-                PLAYER* playerInfo = *(PLAYER**)ls_iterator_move_next(&iteratorInfo);
-                player_set_fired(playerInfo, false);
-            }
-            appl->sendData = false;
-            usleep(20000);
         }
+        ls_iterator_reset(&iteratorInfo);
+        while (ls_iterator_has_next(&iteratorInfo)) {
+            PLAYER* playerInfo = *(PLAYER**)ls_iterator_move_next(&iteratorInfo);
+            player_set_fired(playerInfo, false);
+        }
+        appl->sendData = false;
+        usleep(20000);
     }
     return 0;
 }
@@ -176,7 +175,7 @@ void* app_receive_data(void *app) {
             tmpX = (float)sfPacket_readFloat(appl->packetReceive);
             tmpY = (float)sfPacket_readFloat(appl->packetReceive);
             tmpDir = (int)sfPacket_readInt32(appl->packetReceive);
-            pFIred = (bool)sfPacket_readInt32(appl->packetReceive);
+            pFIred = (bool)sfPacket_readBool(appl->packetReceive);
             ls_iterator_reset(&iterator);
             while (ls_iterator_has_next(&iterator)) {
                 PLAYER* player = *(PLAYER**) ls_iterator_move_next(&iterator);
@@ -184,6 +183,7 @@ void* app_receive_data(void *app) {
                     player_lock_mutex(player);
                     player_update_position(player, tmpX, tmpY, tmpDir);
                     player_set_fired(player, pFIred);
+
                     player_unlock_mutex(player);
                     break;
                 }
