@@ -5,6 +5,7 @@
 #ifndef UDSP_TANKS_MENU_H
 #define UDSP_TANKS_MENU_H
 
+#include <regex.h>
 #include <SFML/Graphics.h>
 #include "../../common/linked_list/linked_list.h"
 #include "elements/button.h"
