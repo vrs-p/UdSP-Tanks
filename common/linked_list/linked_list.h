@@ -42,6 +42,7 @@ bool ls_pop_index(LINKED_LIST* ls, void* item, unsigned int index);
 bool ls_get(const LINKED_LIST* ls, void* item, unsigned int index);
 NODE* ls_get_node(const LINKED_LIST* ls, unsigned int index);
 void ls_access_at(LINKED_LIST* self, void** item, unsigned int index);
+void* ls_access_at_2(LINKED_LIST* self, unsigned int index);
 void ls_run_function(LINKED_LIST* self, void (*function)(void*));
 
 void ls_iterator_init(LINKED_LIST_ITERATOR* self, LINKED_LIST* list);

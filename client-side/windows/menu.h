@@ -7,6 +7,7 @@
 
 #include <regex.h>
 #include <SFML/Graphics.h>
+#include <SFML/Network.h>
 #include "../../common/linked_list/linked_list.h"
 #include "elements/button.h"
 #include "elements/textbox.h"

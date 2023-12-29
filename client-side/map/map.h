@@ -14,6 +14,7 @@ typedef struct map {
 
 void map_create(MAP* map);
 void map_destroy(MAP* map);
+void map_destroy_rectangle_shape(void* shape);
 
 LINKED_LIST* map_get_list_of_walls(MAP* map);
 

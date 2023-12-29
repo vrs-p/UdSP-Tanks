@@ -11,6 +11,7 @@
 #include <SFML/Graphics.h>
 #include <SFML/Network.h>
 #include "../tank/tank.h"
+#include "../map/map.h"
 
 typedef enum {
     STATUS,
@@ -41,6 +42,7 @@ typedef struct application {
 
     TANK* clientTank;
     LINKED_LIST* otherTanks;
+    MAP* map;
 } APPLICATION;
 
 void app_create(APPLICATION* app);

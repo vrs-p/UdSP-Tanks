@@ -61,7 +61,7 @@ void* app_send_data(void *app) {
         ls_iterator_reset(&iterator);
 
         while (ls_iterator_has_next(&iterator)) {
-            PLAYER* player = (PLAYER*)ls_iterator_move_next(&iterator);
+            PLAYER* player = *(PLAYER**)ls_iterator_move_next(&iterator);
 
             sfPacket_clear(appl->packetSend);
             if (!player_killed_get(player) && !player_left_get(player)) {
@@ -69,7 +69,7 @@ void* app_send_data(void *app) {
                 ls_iterator_reset(&iteratorInfo);
 
                 while (ls_iterator_has_next(&iteratorInfo)) {
-                    PLAYER* playerInfo = ls_iterator_move_next(&iteratorInfo);
+                    PLAYER* playerInfo = *(PLAYER**)ls_iterator_move_next(&iteratorInfo);
                     if (player_id_get(playerInfo) != player_id_get(player)) {
                         player_lock_mutex(playerInfo);
 
@@ -100,7 +100,7 @@ void* app_send_data(void *app) {
 
                 ls_iterator_reset(&iteratorInfo);
                 while (ls_iterator_has_next(&iteratorInfo)) {
-                    PLAYER* playerKilled = ls_iterator_move_next(&iteratorInfo);
+                    PLAYER* playerKilled = *(PLAYER**)ls_iterator_move_next(&iteratorInfo);
                     if (sfUdpSocket_sendPacket(appl->socket, appl->packetSend, player_get_connection(playerKilled)->ipAddress, player_get_connection(playerKilled)->port) != sfSocketDone) {
                         printf("Notify dead user to the user: %s failed\n", player_name(playerKilled));
                     }
@@ -115,7 +115,7 @@ void* app_send_data(void *app) {
                 player_unlock_mutex(player);
                 ls_iterator_reset(&iteratorInfo);
                 while (ls_iterator_has_next(&iteratorInfo)) {
-                    PLAYER* playerInfo = ls_iterator_move_next(&iteratorInfo);
+                    PLAYER* playerInfo = *(PLAYER**)ls_iterator_move_next(&iteratorInfo);
                     if (sfUdpSocket_sendPacket(appl->socket, appl->packetSend, player_get_connection(playerInfo)->ipAddress, player_get_connection(playerInfo)->port) != sfSocketDone) {
                         printf("Notify user: %s that user left, failed.\n", player_name(playerInfo));
                     }
@@ -127,7 +127,7 @@ void* app_send_data(void *app) {
 
                 ls_iterator_reset(&iteratorInfo);
                 while (ls_iterator_has_next(&iteratorInfo)) {
-                    PLAYER* playerInfo = ls_iterator_move_next(&iteratorInfo);
+                    PLAYER* playerInfo = *(PLAYER**)ls_iterator_move_next(&iteratorInfo);
                     sfPacket_writeInt32(appl->packetSend, player_id_get(playerInfo));
                     sfPacket_writeInt32(appl->packetSend, player_score_get(playerInfo));
                 }
@@ -137,7 +137,7 @@ void* app_send_data(void *app) {
 
             ls_iterator_reset(&iteratorInfo);
             while (ls_iterator_has_next(&iteratorInfo)) {
-                PLAYER* playerInfo = ls_iterator_move_next(&iteratorInfo);
+                PLAYER* playerInfo = *(PLAYER**)ls_iterator_move_next(&iteratorInfo);
                 player_set_fired(playerInfo, false);
             }
             appl->sendData = false;
@@ -179,7 +179,7 @@ void* app_receive_data(void *app) {
             pFIred = (bool)sfPacket_readInt32(appl->packetReceive);
             ls_iterator_reset(&iterator);
             while (ls_iterator_has_next(&iterator)) {
-                PLAYER* player = (PLAYER*) ls_iterator_move_next(&iterator);
+                PLAYER* player = *(PLAYER**) ls_iterator_move_next(&iterator);
                 if (player_id_get(player) == pId) {
                     player_lock_mutex(player);
                     player_update_position(player, tmpX, tmpY, tmpDir);
@@ -194,7 +194,7 @@ void* app_receive_data(void *app) {
 
             ls_iterator_reset(&iterator);
             while (ls_iterator_has_next(&iterator)) {
-                PLAYER* player = (PLAYER*) ls_iterator_move_next(&iterator);
+                PLAYER* player = *(PLAYER**) ls_iterator_move_next(&iterator);
                 if (player_id_get(player) == pId) {
                     player_lock_mutex(player);
                     player_killed(player);
@@ -208,7 +208,7 @@ void* app_receive_data(void *app) {
             pId = (int)sfPacket_readInt32(appl->packetReceive);
             ls_iterator_reset(&iterator);
             while (ls_iterator_has_next(&iterator)) {
-                PLAYER* player = (PLAYER*) ls_iterator_move_next(&iterator);
+                PLAYER* player = *(PLAYER**) ls_iterator_move_next(&iterator);
                 if (player_id_get(player) == pId) {
                     player_lock_mutex(player);
                     player_left(player, true);
@@ -325,13 +325,13 @@ void app_initialize_game(APPLICATION *app) {
     LINKED_LIST_ITERATOR iterator;
     ls_iterator_init(&iterator, app->players);
     while (ls_iterator_has_next(&iterator)) {
-        PLAYER* player = (PLAYER*)ls_iterator_move_next(&iterator);
+        PLAYER* player = *(PLAYER**)ls_iterator_move_next(&iterator);
         sfPacket_clear(app->packetSend);
         LINKED_LIST_ITERATOR iteratorInfo;
         ls_iterator_init(&iteratorInfo, app->players);
 
         while (ls_iterator_has_next(&iteratorInfo)) {
-            PLAYER *playerInfo = (PLAYER *) ls_iterator_move_next(&iteratorInfo);
+            PLAYER *playerInfo = *(PLAYER **) ls_iterator_move_next(&iteratorInfo);
             if (player_id_get(player) != player_id_get(playerInfo)) {
                 sfPacket_writeInt32(app->packetSend, player_id_get(playerInfo));
                 sfPacket_writeString(app->packetSend, player_name(playerInfo));
@@ -351,7 +351,7 @@ void app_update_position_of_tanks(APPLICATION *app) {
     ls_iterator_init(&iterator, app->players);
     while (ls_iterator_has_next(&iterator)) {
         sfPacket_clear(app->packetSend);
-        PLAYER* player = (PLAYER*) ls_iterator_move_next(&iterator);
+        PLAYER* player = *(PLAYER**)ls_iterator_move_next(&iterator);
         sfUdpSocket_sendPacket(app->socket, app->packetSend, player_get_connection(player)->ipAddress, player_get_connection(player)->port);
     }
 
@@ -373,8 +373,7 @@ void app_update_position_of_tanks(APPLICATION *app) {
         }
 
         for (int i = 0; i < ls_get_size(app->players); ++i) {
-            PLAYER* player = NULL;
-            ls_access_at(app->players, (void**)&player, i);
+            PLAYER* player = *(PLAYER**)ls_access_at_2(app->players, i);
             if (player_id_get(player) == pId) {
                 player_update_position(player, tmpX, tmpY, (DIRECTION)tmpDir);
                 player_set_initial_position(player, tmpX, tmpY, (DIRECTION)tmpDir);

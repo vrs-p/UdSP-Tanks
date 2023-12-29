@@ -23,7 +23,7 @@ void btn_destroy(BUTTON* btn) {
     btn->button = NULL;
 }
 
-void btn_set_font(BUTTON* btn, sfFont font) {
+void btn_set_font(BUTTON* btn, sfFont* font) {
     sfText_setFont(btn->text, font);
 }
 
@@ -57,9 +57,9 @@ sfText* btn_get_text(BUTTON* btn) {
     return btn->text;
 }
 
-bool btn_is_mouse_over(BUTTON* btn, sfRenderWindow window) {
-    float mouseX = sfMouse_getPositionRenderWindow(window).x;
-    float mouseY = sfMouse_getPositionRenderWindow(window).y;
+bool btn_is_mouse_over(BUTTON* btn, sfRenderWindow* window) {
+    float mouseX = (float)sfMouse_getPositionRenderWindow(window).x;
+    float mouseY = (float)sfMouse_getPositionRenderWindow(window).y;
 
     float btnX = sfRectangleShape_getPosition(btn->button).x;
     float btnY = sfRectangleShape_getPosition(btn->button).y;

@@ -29,6 +29,7 @@ typedef struct tank {
 
 void tank_create(TANK* tank);
 void tank_destroy(TANK* tank);
+void tank_destroy_void(void * tank);
 
 void tank_move_up(TANK* tank);
 void tank_move_down(TANK* tank);
@@ -52,7 +53,7 @@ sfSprite* tank_get_sprite(TANK* tank);
 int tank_get_direction(TANK* tank);
 int tank_get_player_id(TANK* tank);
 char* tank_get_player_name(TANK* tank);
-bullet* tank_get_bullet(TANK* tank);
+BULLET* tank_get_bullet(TANK* tank);
 bool tank_get_left(TANK* tank);
 int tank_get_score(TANK* tank);
 

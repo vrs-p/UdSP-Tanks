@@ -18,8 +18,24 @@ void bullet_destroy(BULLET* bullet) {
     sfRectangleShape_destroy(bullet->icon);
 }
 
+void bullet_move(BULLET* bullet) {
+    if (bullet->direction == UP){
+        sfVector2f vec = {0.0f, -bullet->speed};
+        sfRectangleShape_move(bullet->icon, vec);
+    } else if (bullet->direction == DOWN) {
+        sfVector2f vec = {0.0f, bullet->speed};
+        sfRectangleShape_move(bullet->icon, vec);
+    } else if (bullet->direction == LEFT) {
+        sfVector2f vec = {-bullet->speed, 0.0f};
+        sfRectangleShape_move(bullet->icon, vec);
+    } else {
+        sfVector2f vec = {bullet->speed, 0.0f};
+        sfRectangleShape_move(bullet->icon, vec);
+    }
+}
+
 void bullet_render(BULLET* bullet, sfRenderWindow* window, LINKED_LIST* listOfWalls) {
-    if (bullet_check_borders(listOfWalls) && bullet->fired) {
+    if (bullet_check_borders(bullet ,listOfWalls) && bullet->fired) {
         bullet_move(bullet);
         sfRenderWindow_drawRectangleShape(window, bullet->icon, NULL);
     } else {
@@ -29,21 +45,22 @@ void bullet_render(BULLET* bullet, sfRenderWindow* window, LINKED_LIST* listOfWa
 }
 
 void bullet_shot(BULLET* bullet, float xPosition, float yPosition, DIRECTION dir) {
+    sfVector2f vec;
     switch (dir) {
         case UP:
         case DOWN:
-            sfVector2f vec = {xPosition - bullet->diameter / 2, yPosition};
+            vec = (sfVector2f){xPosition - (float)bullet->diameter / 2.f, yPosition};
             sfRectangleShape_setPosition(bullet->icon, vec);
             break;
         case LEFT:
         case RIGHT:
-            sfVector2f vec = {xPosition, yPosition - bullet->diameter / 2};
+            vec = (sfVector2f){xPosition, yPosition - (float)bullet->diameter / 2.f};
             sfRectangleShape_setPosition(bullet->icon, vec);
             break;
     }
 
     bullet->fired = true;
-    bullet->direction = direction;
+    bullet->direction = dir;
 }
 
 void bullet_set_fired(BULLET* bullet, bool fired) {
@@ -81,10 +98,12 @@ bool bullet_check_borders(BULLET* bullet, LINKED_LIST* listOfWalls) {
     float yPosition = vec.y;
 
     LINKED_LIST_ITERATOR iterator;
-    ls_iterator_init(iterator, listOfWalls);
-    while (ls_iterator_has_next(iterator)) {
-        sfRectangleShape wall = (sfRectangleShape*)ls_iterator_move_next(iterator);
-        if (sfFloatRect_intersects(sfRectangleShape_getGlobalBounds(wall), sfRectangleShape_getGlobalBounds(bullet->icon), NULL)) {
+    ls_iterator_init(&iterator, listOfWalls);
+    while (ls_iterator_has_next(&iterator)) {
+        sfRectangleShape* wall = *(sfRectangleShape**)ls_iterator_move_next(&iterator);
+        sfFloatRect boundsWall = sfRectangleShape_getGlobalBounds(wall);
+        sfFloatRect boundsBullet = sfRectangleShape_getGlobalBounds(bullet->icon);
+        if (sfFloatRect_intersects(&boundsWall, &boundsBullet, NULL)) {
             canContinue = false;
         }
     }
@@ -94,20 +113,4 @@ bool bullet_check_borders(BULLET* bullet, LINKED_LIST* listOfWalls) {
     }
 
     return canContinue;
-}
-
-void bullet_move(BULLET* bullet) {
-    if (bullet->direction == UP){
-        sfVector2f vec = {0.0f, -bullet->speed};
-        sfRectangleShape_move(bullet->icon, vec);
-    } else if (bullet->direction_ == DOWN) {
-        sfVector2f vec = {0.0f, bullet->speed};
-        sfRectangleShape_move(bullet->icon, vec);
-    } else if (bullet->direction_ == LEFT) {
-        sfVector2f vec = {-bullet->speed, 0.0f};
-        sfRectangleShape_move(bullet->icon, vec);
-    } else {
-        sfVector2f vec = {bullet->speed, 0.0f};
-        sfRectangleShape_move(bullet->icon, vec);
-    }
 }

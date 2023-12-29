@@ -21,10 +21,10 @@ typedef struct textbox {
 void txtBox_create(TEXTBOX* txtbox, int size, sfColor color, bool isSelected);
 void txtBox_destroy(TEXTBOX* txtbox);
 
-void txtbox_set_font(TEXTBOX* txtbox, sfFont &font);
+void txtbox_set_font(TEXTBOX* txtbox, sfFont* font);
 void txtbox_set_position(TEXTBOX* txtbox, sfVector2f position);
-void txtbox_set_limit(TEXTBOX* txtbox, bool hasLimit);
-void txtbox_set_limit(TEXTBOX* txtbox, int limit);
+void txtbox_set_limit_bool(TEXTBOX* txtbox, bool hasLimit);
+void txtbox_set_limit_int(TEXTBOX* txtbox, int limit);
 void txtbox_set_selected(TEXTBOX* txtbox, bool isSelected);
 void txtbox_set_initial_text(TEXTBOX* txtbox, char* text);
 void txtbox_typed(TEXTBOX* txtbox, sfEvent event);
