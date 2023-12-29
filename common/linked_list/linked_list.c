@@ -209,10 +209,18 @@ void ls_run_function(LINKED_LIST *self, void (*function)(void *)) {
     ls_iterator_init(&iterator, self);
     while (ls_iterator_has_next(&iterator)) {
         void* item = ls_iterator_move_next(&iterator);
-        function((void**)item);
+        function(*(void**)item);
     }
 }
 
 void ls_iterator_reset(LINKED_LIST_ITERATOR *self) {
     ls_iterator_init(self, self->list);
+}
+
+void *ls_access_at_2(LINKED_LIST *self, unsigned int index) {
+    if (index > self->size)
+    {
+        return NULL;
+    }
+    return ls_get_node(self, index)->item;
 }

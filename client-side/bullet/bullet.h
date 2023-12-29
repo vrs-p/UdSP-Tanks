@@ -20,7 +20,7 @@ typedef struct bullet {
     int diameter;
     sfRectangleShape* icon;
     bool fired;
-    bool firedAndSent
+    bool firedAndSent;
     DIRECTION direction;
 } BULLET;
 

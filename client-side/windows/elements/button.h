@@ -18,14 +18,14 @@ typedef struct button {
 void btn_create(BUTTON* btn, sfVector2f size, sfColor bgColor, char* text, int characterSize, sfColor textColor);
 void btn_destroy(BUTTON* btn);
 
-void btn_set_font(BUTTON* btn, sfFont font);
+void btn_set_font(BUTTON* btn, sfFont* font);
 void btn_set_bg_color(BUTTON* btn, sfColor color);
 void btn_set_text_color(BUTTON* btn, sfColor color);
 void btn_set_position(BUTTON* btn, sfVector2f pos);
 void btn_set_clickable(BUTTON* btn, bool isClickable);
 sfRectangleShape* btn_get(BUTTON* btn);
 sfText* btn_get_text(BUTTON* btn);
-bool btn_is_mouse_over(BUTTON* btn, sfRenderWindow window);
+bool btn_is_mouse_over(BUTTON* btn, sfRenderWindow* window);
 bool btn_is_clickable(BUTTON* btn);
 
 #endif //UDSP_TANKS_BUTTON_H

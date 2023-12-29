@@ -2,9 +2,10 @@
 // Created by vrsp on 28.12.2023.
 //
 
+#include <string.h>
 #include "tank.h"
 
-void tank_create(TANK* tank) {
+void tank_create(TANK *tank) {
     tank->left = false;
 
     tank->texture = sfTexture_createFromFile("../../common/img/tankWithoutBG.png", NULL);
@@ -20,9 +21,12 @@ void tank_create(TANK* tank) {
     tank->direction = UP;
 
     tank->lastFire = time(NULL);
+
+    tank->mutex = malloc(sizeof(pthread_mutex_t));
+    pthread_mutex_init(tank->mutex, NULL);
 }
 
-void tank_destroy(TANK* tank) {
+void tank_destroy(TANK *tank) {
     free(tank->playerName);
     tank->playerName = NULL;
 
@@ -36,31 +40,35 @@ void tank_destroy(TANK* tank) {
     tank->bullet = NULL;
 }
 
-void tank_move_up(TANK* tank) {
+void tank_destroy_void(void *tank) {
+    tank_destroy((TANK*)tank);
+}
+
+void tank_move_up(TANK *tank) {
     tank_rotate(tank, UP);
-    sfVector2f vec = { 0, -tank->speed};
+    sfVector2f vec = {0, -tank->speed};
     sfSprite_move(tank->sprite, vec);
 }
 
-void tank_move_down(TANK* tank) {
+void tank_move_down(TANK *tank) {
     tank_rotate(tank, DOWN);
-    sfVector2f vec = { 0, tank->speed};
+    sfVector2f vec = {0, tank->speed};
     sfSprite_move(tank->sprite, vec);
 }
 
-void tank_move_left(TANK* tank) {
+void tank_move_left(TANK *tank) {
     tank_rotate(tank, LEFT);
     sfVector2f vec = {-tank->speed, 0};
     sfSprite_move(tank->sprite, vec);
 }
 
-void tank_move_right(TANK* tank) {
+void tank_move_right(TANK *tank) {
     tank_rotate(tank, RIGHT);
     sfVector2f vec = {tank->speed, 0};
     sfSprite_move(tank->sprite, vec);
 }
 
-void tank_fire(TANK* tank) {
+void tank_fire(TANK *tank) {
     if (difftime(time(NULL), tank->lastFire) > tank->reloadTime) {
         float xSize = sfTexture_getSize(sfSprite_getTexture(tank->sprite)).x * sfSprite_getScale(tank->sprite).x;
 
@@ -90,25 +98,28 @@ void tank_fire(TANK* tank) {
     }
 }
 
-void tank_rotate(TANK* tank, DIRECTION dir) {
-    float xSize = sfTexture_getSize(sfSprite_getTexture(tank->sprite)).x * sfSprite_getScale(tank->sprite).x;
-    float ySize = sfTexture_getSize(sfSprite_getTexture(tank->sprite)).y * sfSprite_getScale(tank->sprite).y;
-
+void tank_rotate(TANK *tank, DIRECTION dir) {
+    float xSize = (float) sfTexture_getSize(sfSprite_getTexture(tank->sprite)).x * sfSprite_getScale(tank->sprite).x;
+    float ySize = (float) sfTexture_getSize(sfSprite_getTexture(tank->sprite)).y * sfSprite_getScale(tank->sprite).y;
+    sfVector2f vec;
     switch (dir) {
         case UP:
             switch (tank->direction) {
                 case DOWN:
-                    sfVector2f vec = {sfSprite_getPosition(tank->sprite).x - xSize, sfSprite_getPosition(tank->sprite).y - ySize * 4 / 3};
+                    vec = (sfVector2f) {sfSprite_getPosition(tank->sprite).x - xSize,
+                                        sfSprite_getPosition(tank->sprite).y - ySize * 4 / 3};
                     sfSprite_setPosition(tank->sprite, vec);
                     break;
 
                 case LEFT:
-                    sfVector2f vec = {sfSprite_getPosition(tank->sprite).x + ySize - xSize, sfSprite_getPosition(tank->sprite).y - ySize};
+                    vec = (sfVector2f) {sfSprite_getPosition(tank->sprite).x + ySize - xSize,
+                                        sfSprite_getPosition(tank->sprite).y - ySize};
                     sfSprite_setPosition(tank->sprite, vec);
                     break;
 
                 case RIGHT:
-                    sfVector2f vec = {sfSprite_getPosition(tank->sprite).x - ySize, sfSprite_getPosition(tank->sprite).y - ySize + xSize};
+                    vec = (sfVector2f) {sfSprite_getPosition(tank->sprite).x - ySize,
+                                        sfSprite_getPosition(tank->sprite).y - ySize + xSize};
                     sfSprite_setPosition(tank->sprite, vec);
                     break;
 
@@ -122,18 +133,23 @@ void tank_rotate(TANK* tank, DIRECTION dir) {
         case DOWN:
             switch (tank->direction) {
                 case UP:
-                    sfVector2f vec = {sfSprite_getPosition(tank->sprite).x + xSize, sfSprite_getPosition(tank->sprite).y + ySize * 4 / 3};
+                    vec = (sfVector2f) {sfSprite_getPosition(tank->sprite).x + xSize,
+                                        sfSprite_getPosition(tank->sprite).y + ySize * 4 / 3};
                     sfSprite_setPosition(tank->sprite, vec);
                     break;
 
                 case LEFT:
-                    sfVector2f vec = {sfSprite_getPosition(tank->sprite).x + ySize, sfSprite_getPosition(tank->sprite).y + ySize - xSize};
+                    vec = (sfVector2f) {sfSprite_getPosition(tank->sprite).x + ySize,
+                                        sfSprite_getPosition(tank->sprite).y + ySize - xSize};
                     sfSprite_setPosition(tank->sprite, vec);
                     break;
 
                 case RIGHT:
-                    sfVector2f vec = {sfSprite_getPosition(tank->sprite).x - ySize + xSize, sfSprite_getPosition(tank->sprite).y + ySize};
+                    vec = (sfVector2f) {sfSprite_getPosition(tank->sprite).x - ySize + xSize,
+                                        sfSprite_getPosition(tank->sprite).y + ySize};
                     sfSprite_setPosition(tank->sprite, vec);
+                    break;
+                case DOWN:
                     break;
             }
 
@@ -143,18 +159,23 @@ void tank_rotate(TANK* tank, DIRECTION dir) {
         case LEFT:
             switch (tank->direction) {
                 case UP:
-                    sfVector2f vec = {sfSprite_getPosition(tank->sprite).x + xSize - ySize, sfSprite_getPosition(tank->sprite).y + ySize};
+                    vec = (sfVector2f) {sfSprite_getPosition(tank->sprite).x + xSize - ySize,
+                                        sfSprite_getPosition(tank->sprite).y + ySize};
                     sfSprite_setPosition(tank->sprite, vec);
                     break;
 
                 case DOWN:
-                    sfVector2f vec = {sfSprite_getPosition(tank->sprite).x - ySize, sfSprite_getPosition(tank->sprite).y - ySize + xSize};
+                    vec = (sfVector2f) {sfSprite_getPosition(tank->sprite).x - ySize,
+                                        sfSprite_getPosition(tank->sprite).y - ySize + xSize};
                     sfSprite_setPosition(tank->sprite, vec);
                     break;
 
                 case RIGHT:
-                    sfVector2f vec = {sfSprite_getPosition(tank->sprite).x - ySize * 4 / 3, sfSprite_getPosition(tank->sprite).y + xSize};
+                    vec = (sfVector2f) {sfSprite_getPosition(tank->sprite).x - ySize * 4 / 3,
+                                        sfSprite_getPosition(tank->sprite).y + xSize};
                     sfSprite_setPosition(tank->sprite, vec);
+                    break;
+                case LEFT:
                     break;
             }
 
@@ -164,18 +185,23 @@ void tank_rotate(TANK* tank, DIRECTION dir) {
         case RIGHT:
             switch (tank->direction) {
                 case UP:
-                    sfVector2f vec = {sfSprite_getPosition(tank->sprite).x + ySize, sfSprite_getPosition(tank->sprite).y + ySize - xSize};
+                    vec = (sfVector2f) {sfSprite_getPosition(tank->sprite).x + ySize,
+                                        sfSprite_getPosition(tank->sprite).y + ySize - xSize};
                     sfSprite_setPosition(tank->sprite, vec);
                     break;
 
                 case DOWN:
-                    sfVector2f vec = {sfSprite_getPosition(tank->sprite).x - xSize + ySize, sfSprite_getPosition(tank->sprite).y - ySize};
+                    vec = (sfVector2f) {sfSprite_getPosition(tank->sprite).x - xSize + ySize,
+                                        sfSprite_getPosition(tank->sprite).y - ySize};
                     sfSprite_setPosition(tank->sprite, vec);
                     break;
 
                 case LEFT:
-                    sfVector2f vec = {sfSprite_getPosition(tank->sprite).x + ySize * 4 / 3, sfSprite_getPosition(tank->sprite).y - xSize};
+                    vec = (sfVector2f) {sfSprite_getPosition(tank->sprite).x + ySize * 4 / 3,
+                                        sfSprite_getPosition(tank->sprite).y - xSize};
                     sfSprite_setPosition(tank->sprite, vec);
+                    break;
+                case RIGHT:
                     break;
             }
 
@@ -186,7 +212,7 @@ void tank_rotate(TANK* tank, DIRECTION dir) {
     tank->direction = dir;
 }
 
-void tank_render(TANK* tank, sfRenderWindow* window, LINKED_LIST* listOfWalls) {
+void tank_render(TANK *tank, sfRenderWindow *window, LINKED_LIST *listOfWalls) {
     if (bullet_was_fired(tank->bullet)) {
         bullet_render(tank->bullet, window, listOfWalls);
     }
@@ -194,58 +220,59 @@ void tank_render(TANK* tank, sfRenderWindow* window, LINKED_LIST* listOfWalls) {
     sfRenderWindow_drawSprite(window, tank->sprite, NULL);
 }
 
-void tank_lock_mutex(TANK* tank) {
+void tank_lock_mutex(TANK *tank) {
     pthread_mutex_lock(tank->mutex);
 }
 
-void tank_mutex_unlock(TANK* tank) {
+void tank_unlock_mutex(TANK *tank) {
     pthread_mutex_unlock(tank->mutex);
 }
 
-void tank_set_direction(TANK* tank, DIRECTION dir) {
+void tank_set_direction(TANK *tank, DIRECTION dir) {
     tank->direction = dir;
 }
 
-void tank_set_player_id(TANK* tank, int id) {
+void tank_set_player_id(TANK *tank, int id) {
     tank->playerId = id;
 }
 
-void tank_set_player_name(TANK* tank, char* name) {
-    tank->playerName = name;
+void tank_set_player_name(TANK *tank, char *name) {
+    tank->playerName = malloc(sizeof(char)*strlen(name));
+    strcpy(tank->playerName, name);
 }
 
-void tank_set_left(TANK* tank, bool left) {
+void tank_set_left(TANK *tank, bool left) {
     tank->left = left;
 }
 
-void tank_set_score(TANK* tank, int score) {
+void tank_set_score(TANK *tank, int score) {
     tank->score = score;
 }
 
-sfSprite* tank_get_sprite(TANK* tank) {
+sfSprite *tank_get_sprite(TANK *tank) {
     return tank->sprite;
 }
 
-int tank_get_direction(TANK* tank) {
+int tank_get_direction(TANK *tank) {
     return tank->direction;
 }
 
-int tank_get_player_id(TANK* tank) {
+int tank_get_player_id(TANK *tank) {
     return tank->playerId;
 }
 
-char* tank_get_player_name(TANK* tank) {
+char *tank_get_player_name(TANK *tank) {
     return tank->playerName;
 }
 
-bullet* tank_get_bullet(TANK* tank) {
+BULLET *tank_get_bullet(TANK *tank) {
     return tank->bullet;
 }
 
-bool tank_get_left(TANK* tank) {
+bool tank_get_left(TANK *tank) {
     return tank->left;
 }
 
-int tank_get_score(TANK* tank) {
+int tank_get_score(TANK *tank) {
     return tank->score;
 }

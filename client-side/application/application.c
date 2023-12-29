@@ -5,16 +5,20 @@
 #include "application.h"
 
 void app_create(APPLICATION* app) {
+    app->socket = sfUdpSocket_create();
+    app->map = malloc(sizeof(MAP));
+    map_create(app->map);
+
     app->packetSend = sfPacket_create();
     app->id = 0;
 
     app->isRunning = true;
     app->playerWasKilled = false;
 
-    app->font = sfFont_createFromFile("../font/consola.ttf");
-    sfText_setFont(app->nameOfPlayer, app->font);
-    sfText_setCharacterSize(app->nameOfPlayer, 11);
-    sfText_setFillColor(app->nameOfPlayer, sfWhite);
+//    app->font = sfFont_createFromFile("../font/consola.ttf");
+//    sfText_setFont(app->nameOfPlayer, app->font);
+//    sfText_setCharacterSize(app->nameOfPlayer, 11);
+//    sfText_setFillColor(app->nameOfPlayer, sfWhite);
 
     app->clientTank = malloc(sizeof(TANK));
     tank_create(app->clientTank);
@@ -33,36 +37,14 @@ void app_destroy(APPLICATION* app) {
     sfUdpSocket_destroy(app->socket);
 
     tank_destroy(app->clientTank);
-    ls_run_function(app->otherTanks, tank_destroy);
+    ls_run_function(app->otherTanks, tank_destroy_void);
     ls_destroy(app->otherTanks);
+
+    map_destroy(app->map);
+    free(app->map);
 }
 
-void app_run(APPLICATION* app, sfIpAddress ipAddress, int port, char* playerName) {
-    app->ipAddress = ipAddress;
-    app->port = port;
-    app->sendDataBool = false;
-    sfText_setString(app->nameOfPlayer, playerName);
-    tank_set_player_name(app->clientTank, playerName);
 
-    app_communication_with_server(app);
-
-    app->mutex = malloc(sizeof(pthread_mutex_t));
-    pthread_mutex_init(app->mutex, NULL);
-    app->sendDataCond = malloc(sizeof(pthread_cond_t));
-    pthread_cond_init(app->sendDataCond, NULL);
-
-    if (app->isRunning) {
-        pthread_t renderingThread, receivingThread, sendingThread;
-
-        pthread_create(&renderingThread, NULL, app_render, NULL);
-        pthread_create(&receivingThread, NULL, app_receive_data, NULL);
-        pthread_create(&sendingThread, NULL, app_send_data, NULL);
-
-        pthread_join(receivingThread, NULL);
-        pthread_join(sendingThread, NULL);
-        pthread_join(renderingThread, NULL);
-    }
-}
 
 int app_get_player_score(APPLICATION* app) {
     return tank_get_score(app->clientTank);
@@ -70,12 +52,6 @@ int app_get_player_score(APPLICATION* app) {
 
 LINKED_LIST* app_get_other_tanks(APPLICATION* app) {
     return app->otherTanks;
-}
-
-void app_communication_with_server(APPLICATION* app) {
-    app_connect_to_server(app);
-    app_update_positions_of_tanks(app);
-    app_wait_for_game_settings(app);
 }
 
 void app_connect_to_server(APPLICATION* app) {
@@ -89,10 +65,10 @@ void app_connect_to_server(APPLICATION* app) {
     unsigned short port;
     float tmpX, tmpY;
     int tmpDir, tmpID, numberOfPlayers;
-    sfPacket packetReceive = sfPacket_create();
+    sfPacket* packetReceive = sfPacket_create();
     sfPacket_clear(packetReceive);
 
-    if (sfUdpSocket_receivePacket(app->socket, packetReceive, ipAddress, port) == sfSocketDone) {
+    if (sfUdpSocket_receivePacket(app->socket, packetReceive, &ipAddress, &port) == sfSocketDone) {
         tmpX = sfPacket_readFloat(packetReceive);
         tmpY = sfPacket_readFloat(packetReceive);
         tmpID = sfPacket_readInt32(packetReceive);
@@ -147,9 +123,9 @@ void app_connect_to_server(APPLICATION* app) {
             break;
     }
 
-    app.id = tmpID;
+    app->id = tmpID;
     app->numberOfPlayers = numberOfPlayers;
-    sfVector2f = {tmpX, tmpY};
+    sfVector2f vec = {tmpX, tmpY};
     sfSprite_setPosition(tank_get_sprite(app->clientTank), vec);
     tank_rotate(app->clientTank, tmpDir);
     tank_set_direction(app->clientTank, tmpDir);
@@ -159,16 +135,16 @@ void app_connect_to_server(APPLICATION* app) {
 }
 
 void app_wait_for_game_settings(APPLICATION* app) {
-    sfPacket packetReceive = sfPacket_create();
+    sfPacket* packetReceive = sfPacket_create();
     sfIpAddress ipAddress = sfIpAddress_Any;
     unsigned short port;
     int pID, dir;
     float posX, posY;
-    char* name;
+    char name[50];
 
     sfPacket_clear(packetReceive);
 
-    if (sfUdpSocket_receivePacket(app->socket, packetReceive, ipAddress, port) == sfSocketDone)
+    if (sfUdpSocket_receivePacket(app->socket, packetReceive, &ipAddress, &port) == sfSocketDone)
 
     for (int i = 0; i < app->numberOfPlayers - 1; ++i) {
         pID = sfPacket_readInt32(packetReceive);
@@ -176,6 +152,7 @@ void app_wait_for_game_settings(APPLICATION* app) {
         posX = sfPacket_readFloat(packetReceive);
         posY = sfPacket_readFloat(packetReceive);
         dir = sfPacket_readInt32(packetReceive);
+
 
         TANK* tmpTank = malloc(sizeof(TANK));
         tank_create(tmpTank);
@@ -186,31 +163,32 @@ void app_wait_for_game_settings(APPLICATION* app) {
             case UP:
                 break;
 
-            case DOWN:
+            case DOWN: {
                 tank_set_direction(tmpTank, DOWN);
                 tank_rotate(tmpTank, UP);
                 tank_set_direction(tmpTank, DOWN);
                 break;
-
-            case LEFT:
-                float sizeX = sfTexture_getSize(sfSprite_getTexture(tank_get_sprite(app->clientTank))).x;
+            }
+            case LEFT: {
+                float sizeX = (float)sfTexture_getSize(sfSprite_getTexture(tank_get_sprite(app->clientTank))).x;
                 float scaleX = sfSprite_getScale(tank_get_sprite(app->clientTank)).x;
-                float sizeY = sfTexture_getSize(sfSprite_getTexture(tank_get_sprite(app->clientTank))).y;
+                float sizeY = (float)sfTexture_getSize(sfSprite_getTexture(tank_get_sprite(app->clientTank))).y;
                 float scaleY = sfSprite_getScale(tank_get_sprite(app->clientTank)).y;
 
                 posX = posX + sizeY * scaleY - sizeX * scaleX;
                 posY = posY - sizeY * scaleY;
                 break;
-
-            case RIGHT:
-                float sizeX = sfTexture_getSize(sfSprite_getTexture(tank_get_sprite(app->clientTank))).x;
+            }
+            case RIGHT: {
+                float sizeX = (float)sfTexture_getSize(sfSprite_getTexture(tank_get_sprite(app->clientTank))).x;
                 float scaleX = sfSprite_getScale(tank_get_sprite(app->clientTank)).x;
-                float sizeY = sfTexture_getSize(sfSprite_getTexture(tank_get_sprite(app->clientTank))).y;
+                float sizeY = (float)sfTexture_getSize(sfSprite_getTexture(tank_get_sprite(app->clientTank))).y;
                 float scaleY = sfSprite_getScale(tank_get_sprite(app->clientTank)).y;
 
                 posX = posX - sizeY * scaleY;
                 posY = posY - sizeY * scaleY + sizeX + scaleX;
                 break;
+            }
         }
 
         switch (tank_get_player_id(tmpTank)) {
@@ -231,30 +209,18 @@ void app_wait_for_game_settings(APPLICATION* app) {
         sfSprite_setPosition(tank_get_sprite(tmpTank), vec);
         tank_rotate(tmpTank, dir);
 
-        ls_push(app->otherTanks, tmpTank);
+        ls_push(app->otherTanks, &tmpTank);
     }
     sfPacket_destroy(packetReceive);
 }
 
-void app_render(APPLICATION* app) {
-    app_initialize_window(app);
 
-    while (app->isRunning) {
-        app_read_client_input(app);
-        app_check_borders(app);
-        app_check_bullet_collision(app);
-        app_draw(app);
-    }
-
-    sfRenderWindow_setActive(app->window, sfFalse);
-    sfRenderWindow_close(app->window);
-}
 
 #define SCREEN_WIDTH 800
 #define SCREEN_HEIGHT 800
 
 void app_initialize_window(APPLICATION* app) {
-    sfVideoMode mode = {SCREEN_WIDTH, SCREEN_HEIGHT, NULL};
+    sfVideoMode mode = {SCREEN_WIDTH, SCREEN_HEIGHT, 32};
     app->window = sfRenderWindow_create(mode, "UdSP-Tanks", sfClose, NULL);
     sfRenderWindow_setFramerateLimit(app->window, 60);
     sfRenderWindow_setActive(app->window, sfTrue);
@@ -262,12 +228,12 @@ void app_initialize_window(APPLICATION* app) {
 
 void app_read_client_input(APPLICATION* app) {
     sfEvent event;
-    while (sfRenderWindow_pollEvent(app->window, event)) {
+    while (sfRenderWindow_pollEvent(app->window, &event)) {
         if (event.type == sfEvtClosed) {
             tank_set_left(app->clientTank, true);
             pthread_mutex_lock(app->mutex);
             app->sendDataBool = true;
-            pthread_cond_broadcast(app->sendDataCond);
+            pthread_cond_signal(app->sendDataCond);
             pthread_mutex_unlock(app->mutex);
         } else if (event.type == sfEvtKeyPressed) {
             switch (event.key.code) {
@@ -295,11 +261,13 @@ void app_read_client_input(APPLICATION* app) {
                 case sfKeyEscape:
                     tank_set_left(app->clientTank, true);
                     break;
+                default:
+                    break;
             }
 
             pthread_mutex_lock(app->mutex);
             app->sendDataBool = true;
-            pthread_cond_broadcast(app->sendDataCond);
+            pthread_cond_signal(app->sendDataCond);
             pthread_mutex_unlock(app->mutex);
         }
     }
@@ -309,40 +277,45 @@ void app_check_borders(APPLICATION* app) {
     float posX = sfSprite_getPosition(tank_get_sprite(app->clientTank)).x;
     float posY = sfSprite_getPosition(tank_get_sprite(app->clientTank)).y;
 
-    LINKED_LIST_ITERATOR* iterator;
-    ls_iterator_init(iterator, map_get_list_of_walls(app->map));
+    LINKED_LIST_ITERATOR iterator;
+    ls_iterator_init(&iterator, map_get_list_of_walls(app->map));
     while (ls_iterator_has_next(&iterator)) {
-        sfRectangleShape* wall = ls_iterator_move_next(&iterator);
+        sfRectangleShape* wall = *(sfRectangleShape**)ls_iterator_move_next(&iterator);
         float wallPosX = sfRectangleShape_getPosition(wall).x;
         float wallPosY = sfRectangleShape_getPosition(wall).y;
         float wallSizeX = sfRectangleShape_getSize(wall).x;
         float wallSizeY = sfRectangleShape_getSize(wall).y;
 
-        if (sfFloatRect_intersects(sfSprite_getGlobalBounds(tank_get_sprite(app->clientTank), sfRectangleShape_getGlobalBounds(wall), NULL))) {
+
+        sfFloatRect tankBounds = sfSprite_getGlobalBounds(tank_get_sprite(app->clientTank));
+        sfFloatRect wallBounds = sfRectangleShape_getGlobalBounds(wall);
+        sfBool intersection = sfFloatRect_intersects(&tankBounds, &wallBounds, NULL);
+//        sfFloatRect_intersects(&sfSprite_getGlobalBounds(tank_get_sprite(app->clientTank)), sfRectangleShape_getGlobalBounds(wall), NULL)
+        if (intersection) {
             switch (tank_get_direction(app->clientTank)) {
-                case UP:
+                case UP: {
                     sfVector2f vec = {posX, wallPosY + wallSizeY + 1};
                     sfSprite_setPosition(tank_get_sprite(app->clientTank), vec);
                     break;
-
-                case DOWN:
+                }
+                case DOWN: {
                     sfVector2f vec = {posX, wallPosY - 1};
                     sfSprite_setPosition(tank_get_sprite(app->clientTank), vec);
                     break;
-
-                case LEFT:
+                }
+                case LEFT: {
                     sfVector2f vec = {wallPosX + wallSizeX + 1, posY};
                     sfSprite_setPosition(tank_get_sprite(app->clientTank), vec);
                     break;
-
-                case RIGHT:
+                }
+                case RIGHT: {
                     sfVector2f vec = {wallPosX - 1, posY};
                     sfSprite_setPosition(tank_get_sprite(app->clientTank), vec);
                     break;
+                }
             }
         }
     }
-    ls_iterator_destroy(iterator);
 
     if (posX > SCREEN_WIDTH) {
         sfVector2f vec = {SCREEN_WIDTH, posY};
@@ -365,23 +338,47 @@ void app_check_borders(APPLICATION* app) {
     }
 }
 
-#undef SCREEN_WIDTH
-#undef SCREEN_HEIGHT
+void app_update_positions_of_tanks(APPLICATION* app) {
+    sfPacket* packetReceive = sfPacket_create();
+    sfPacket* packetSend = sfPacket_create();
+    sfIpAddress ipAddress = sfIpAddress_Any;
+    unsigned short port;
+    float posX, posY;
+
+    if (sfUdpSocket_receivePacket(app->socket, packetReceive, &ipAddress, &port) == sfSocketDone) {}
+    sfPacket_clear(packetReceive);
+    sfPacket_clear(packetSend);
+
+    posX = sfSprite_getPosition(tank_get_sprite(app->clientTank)).x;
+    posY = sfSprite_getPosition(tank_get_sprite(app->clientTank)).y;
+
+    sfPacket_writeInt32(packetSend, tank_get_player_id(app->clientTank));
+    sfPacket_writeFloat(packetSend, posX);
+    sfPacket_writeFloat(packetSend, posY);
+    sfPacket_writeInt32(packetSend, tank_get_direction(app->clientTank));
+
+    if (sfUdpSocket_sendPacket(app->socket, packetSend, app->ipAddress, app->port) != sfSocketDone) {
+        fprintf(stderr, "Sending failed.\n");
+    }
+
+    sfPacket_destroy(packetReceive);
+    sfPacket_destroy(packetSend);
+}
 
 void app_check_bullet_collision(APPLICATION* app) {
     BULLET* bullet = tank_get_bullet(app->clientTank);
 
-    if (bullet != nullptr) {
+    if (bullet != NULL) {
         if (bullet_was_fired(bullet)) {
             float bulletPosX = bullet_get_position(bullet).x;
             float bulletPosY = bullet_get_position(bullet).y;
             float bulletSizeX = bullet_get_size(bullet).x;
             float bulletSizeY = bullet_get_size(bullet).y;
 
-            LINKED_LIST_ITERATOR* iterator;
-            ls_iterator_init(iterator, app->otherTanks);
-            while (ls_iterator_has_next(iterator)) {
-                TANK* tank = ls_iterator_move_next(iterator);
+            LINKED_LIST_ITERATOR iterator;
+            ls_iterator_init(&iterator, app->otherTanks);
+            while (ls_iterator_has_next(&iterator)) {
+                TANK* tank = *(TANK**)ls_iterator_move_next(&iterator);
                 if (!tank_get_left(tank)) {
                     float tankPosX = sfSprite_getPosition(tank_get_sprite(tank)).x;
                     float tankPosY = sfSprite_getPosition(tank_get_sprite(tank)).y;
@@ -447,80 +444,115 @@ void app_check_bullet_collision(APPLICATION* app) {
                     }
                 }
             }
-            ls_iterator_destroy(iterator);
         }
     }
 }
 
+void app_communication_with_server(APPLICATION* app) {
+    app_connect_to_server(app);
+    app_update_positions_of_tanks(app);
+    app_wait_for_game_settings(app);
+}
+
 void app_draw(APPLICATION* app) {
-    sfRenderWindow_clear(app->window);
+    sfRenderWindow_clear(app->window, sfBlack);
 
     tank_render(app->clientTank, app->window, map_get_list_of_walls(app->map));
 
-    float tankPosX = sfSprite_getPosition(tank_get_sprite(app->clientTank)).x;
-    float tankPosY = sfSprite_getPosition(tank_get_sprite(app->clientTank)).y;
-    float tankSizeX = sfTexture_getSize(sfSprite_getTexture(tank_get_sprite(app->clientTank))).x
-                      * sfSprite_getScale(tank_get_sprite(app->clientTank)).x;
-    float tankSizeY = sfTexture_getSize(sfSprite_getTexture(tank_get_sprite(app->clientTank))).y
-                      * sfSprite_getScale(tank_get_sprite(app->clientTank)).y;
+//    float tankPosX = sfSprite_getPosition(tank_get_sprite(app->clientTank)).x;
+//    float tankPosY = sfSprite_getPosition(tank_get_sprite(app->clientTank)).y;
+//    float tankSizeX = (float)sfTexture_getSize(sfSprite_getTexture(tank_get_sprite(app->clientTank))).x
+//                      * sfSprite_getScale(tank_get_sprite(app->clientTank)).x;
+//    float tankSizeY = (float)sfTexture_getSize(sfSprite_getTexture(tank_get_sprite(app->clientTank))).y
+//                      * sfSprite_getScale(tank_get_sprite(app->clientTank)).y;
 
-    switch (tank_get_direction(app->clientTank)) {
-        case UP:
-            sfVector2f vec = {tankPosX + tankSizeX / 2 - sfText_getLocalBounds(app->nameOfPlayer).width / 2, tankPosY + tankSizeY + 5};
-            sfText_setPosition(app->nameOfPlayer, vec);
-            break;
+//    switch (tank_get_direction(app->clientTank)) {
+//        case UP: {
+//            sfVector2f vec = {tankPosX + tankSizeX / 2 - sfText_getLocalBounds(app->nameOfPlayer).width / 2,
+//                              tankPosY + tankSizeY + 5};
+//            sfText_setPosition(app->nameOfPlayer, vec);
+//            break;
+//        }
+//        case DOWN: {
+//            sfVector2f vec = {tankPosX - tankSizeX / 2 - sfText_getLocalBounds(app->nameOfPlayer).width / 2,
+//                              tankPosY - tankSizeY - sfText_getLocalBounds(app->nameOfPlayer).height - 10};
+//            sfText_setPosition(app->nameOfPlayer, vec);
+//            break;
+//        }
+//        case LEFT: {
+//            if (sfText_getLocalBounds(app->nameOfPlayer).width <= tankSizeY) {
+//                sfVector2f vec = {tankPosX + tankSizeY - sfText_getLocalBounds(app->nameOfPlayer).width, tankPosY + 5};
+//                sfText_setPosition(app->nameOfPlayer, vec);
+//            } else {
+//                sfVector2f vec = {tankPosX + tankSizeY / 2 - sfText_getLocalBounds(app->nameOfPlayer).width / 2,
+//                                  tankPosY + 5};
+//                sfText_setPosition(app->nameOfPlayer, vec);
+//            }
+//            break;
+//        }
+//        case RIGHT: {
+//            if (sfText_getLocalBounds(app->nameOfPlayer).width <= tankSizeY) {
+//                sfVector2f vec = {tankPosX - tankSizeY, tankPosY + tankSizeX + 5};
+//                sfText_setPosition(app->nameOfPlayer, vec);
+//            } else {
+//                sfVector2f vec = {tankPosX - tankSizeY / 2 - sfText_getLocalBounds(app->nameOfPlayer).width / 2,
+//                                  tankPosY + tankSizeX + 5};
+//                sfText_setPosition(app->nameOfPlayer, vec);
+//            }
+//            break;
+//        }
+//    }
 
-        case DOWN:
-            sfVector2f vec = {tankPosX - tankSizeX / 2 - sfText_getLocalBounds(app->nameOfPlayer).width / 2, tankPosY - tankSizeY - sfText_getLocalBounds(app->nameOfPlayer).height - 10};
-            sfText_setPosition(app->nameOfPlayer, vec);
-            break;
+//    sfRenderWindow_drawText(app->nameOfPlayer); TODO: fix it
 
-        case LEFT:
-            if (sfText_getLocalBounds(app->nameOfPlayer).width <= tankSizeY) {
-                sfVector2f vec = {tankPosX + tankSizeY - sfText_getLocalBounds(app->nameOfPlayer).width, tankPosY + 5};
-                sfText_setPosition(app->nameOfPlayer, vec);
-            } else {
-                sfVector2f vec = {tankPosX + tankSizeY / 2 - sfText_getLocalBounds(app->nameOfPlayer).width / 2, tankPosY + 5};
-                sfText_setPosition(app->nameOfPlayer, vec);
-            }
-            break;
-
-        case RIGHT:
-            if (sfText_getLocalBounds(app->nameOfPlayer).width <= tankSizeY) {
-                sfVector2f vec = {tankPosX - tankSizeY, tankPosY + tankSizeX + 5};
-                sfText_setPosition(app->nameOfPlayer, vec);
-            } else {
-                sfVector2f vec = {tankPosX - tankSizeY / 2 - sfText_getLocalBounds(app->nameOfPlayer).width / 2, tankPosY + tankSizeX + 5};
-                sfText_setPosition(app->nameOfPlayer, vec);
-            }
-            break;
-    }
-
-    sfRenderWindow_drawText(app->nameOfPlayer);
-
-    LINKED_LIST_ITERATOR* iterator;
-    ls_iterator_init(iterator, app->otherTanks);
-    while (ls_iterator_has_next(iterator)) {
-        TANK* tank = ls_iterator_move_next(iterator);
+    LINKED_LIST_ITERATOR iterator;
+    ls_iterator_init(&iterator, app->otherTanks);
+    while (ls_iterator_has_next(&iterator)) {
+        TANK* tank = *(TANK**)ls_iterator_move_next(&iterator);
         tank_lock_mutex(tank);
         if (!tank_get_left(tank)) {
             tank_render(tank, app->window, map_get_list_of_walls(app->map));
         }
         tank_unlock_mutex(tank);
     }
-    ls_iterator_destroy(iterator);
 
-    ls_iterator_init(iterator, map_get_list_of_walls(app->map));
-    while (ls_iterator_has_next(iterator)) {
-        sfRectangleShape* wall = ls_iterator_move_next(iterator);
+    LINKED_LIST_ITERATOR iteratorOther;
+    ls_iterator_init(&iteratorOther, map_get_list_of_walls(app->map));
+    while (ls_iterator_has_next(&iteratorOther)) {
+        sfRectangleShape* wall = *(sfRectangleShape**)ls_iterator_move_next(&iteratorOther);
         sfRenderWindow_drawRectangleShape(app->window, wall, NULL);
     }
-    ls_iterator_destroy(iterator);
 
     sfRenderWindow_display(app->window);
 }
 
-void app_receive_data(APPLICATION* app) {
+void* app_render(void* application) {
+    APPLICATION* app = application;
+    app_initialize_window(app);
+
+    while (app->isRunning) {
+        app_read_client_input(app);
+        app_check_borders(app);
+        app_check_bullet_collision(app);
+        app_draw(app);
+    }
+
+    sfRenderWindow_setActive(app->window, sfFalse);
+    sfRenderWindow_close(app->window);
+    return 0;
+}
+
+
+
+#undef SCREEN_WIDTH
+#undef SCREEN_HEIGHT
+
+
+
+
+
+void* app_receive_data(void* application) {
+    APPLICATION* app = application;
     sfPacket* packetReceive = sfPacket_create();
     sfIpAddress ipAddress = sfIpAddress_Any;
     unsigned short port;
@@ -531,7 +563,7 @@ void app_receive_data(APPLICATION* app) {
 
     while (app->isRunning) {
         sfPacket_clear(packetReceive);
-        if (sfUdpSocket_receivePacket(app->socket, packetReceive, ipAddress, port) == sfSocketDone) {
+        if (sfUdpSocket_receivePacket(app->socket, packetReceive, &ipAddress, &port) == sfSocketDone) {
             msgType = sfPacket_readInt32(packetReceive);
             msgType--;
 
@@ -543,10 +575,10 @@ void app_receive_data(APPLICATION* app) {
                     dir = sfPacket_readInt32(packetReceive);
                     fired = sfPacket_readBool(packetReceive);
 
-                    LINKED_LIST_ITERATOR* iterator;
-                    ls_iterator_init(iterator, app->otherTanks);
-                    while (ls_iterator_has_next(iterator)) {
-                        TANK* tank = ls_iterator_move_next(iterator);
+                    LINKED_LIST_ITERATOR iterator;
+                    ls_iterator_init(&iterator, app->otherTanks);
+                    while (ls_iterator_has_next(&iterator)) {
+                        TANK* tank = *(TANK**)ls_iterator_move_next(&iterator);
                         tank_lock_mutex(tank);
                         if (tank_get_player_id(tank) == pID) {
                             if (tank_get_direction(tank) != dir) {
@@ -562,7 +594,6 @@ void app_receive_data(APPLICATION* app) {
                         }
                         tank_unlock_mutex(tank);
                     }
-                    ls_iterator_destroy(iterator);
                 }
             } else if (msgType == KILLED) {
                 pID = sfPacket_readInt32(packetReceive);
@@ -577,10 +608,10 @@ void app_receive_data(APPLICATION* app) {
                     sfVector2f vec = {posX, posY};
                     sfSprite_setPosition(tank_get_sprite(app->clientTank), vec);
                 } else {
-                    LINKED_LIST_ITERATOR* iterator;
-                    ls_iterator_init(iterator, app->otherTanks);
-                    while (ls_iterator_has_next(iterator)) {
-                        TANK* tank = ls_iterator_move_next(iterator);
+                    LINKED_LIST_ITERATOR iterator;
+                    ls_iterator_init(&iterator, app->otherTanks);
+                    while (ls_iterator_has_next(&iterator)) {
+                        TANK* tank = *(TANK**)ls_iterator_move_next(&iterator);
                         tank_lock_mutex(tank);
                         if (tank_get_player_id(tank) == pID) {
                             bullet_set_fired(tank_get_bullet(tank), false);
@@ -594,17 +625,15 @@ void app_receive_data(APPLICATION* app) {
                         }
                         tank_unlock_mutex(tank);
                     }
-                    ls_iterator_destroy(iterator);
                 }
-                LINKED_LIST_ITERATOR* iterator;
-                ls_iterator_init(iterator, app->otherTanks);
-                while (ls_iterator_has_next(iterator)) {
-                    TANK* tank = ls_iterator_move_next(iterator);
+                LINKED_LIST_ITERATOR iterator;
+                ls_iterator_init(&iterator, app->otherTanks);
+                while (ls_iterator_has_next(&iterator)) {
+                    TANK* tank = *(TANK**)ls_iterator_move_next(&iterator);
                     if (tank_get_player_id(tank) == killerID) {
                         bullet_set_fired(tank_get_bullet(tank), false);
                     }
                 }
-                ls_iterator_destroy(iterator);
             } else if (msgType == END) {
                 for (int i = 0; i < app->numberOfPlayers; ++i) {
                     pID = sfPacket_readInt32(packetReceive);
@@ -613,43 +642,41 @@ void app_receive_data(APPLICATION* app) {
                     if (tank_get_player_id(app->clientTank) == pID) {
                         tank_set_score(app->clientTank, score);
                     } else {
-                        LINKED_LIST_ITERATOR* iterator;
-                        ls_iterator_init(iterator, app->otherTanks);
-                        while (ls_iterator_has_next(iterator)) {
-                            TANK* tank = ls_iterator_move_next(iterator);
+                        LINKED_LIST_ITERATOR iterator;
+                        ls_iterator_init(&iterator, app->otherTanks);
+                        while (ls_iterator_has_next(&iterator)) {
+                            TANK* tank = *(TANK**)ls_iterator_move_next(&iterator);
                             if (tank_get_player_id(tank) == pID) {
                                 tank_set_score(tank, score);
                             }
                         }
-                        ls_iterator_destroy(iterator);
                     }
                 }
                 app->isRunning = false;
             } else if (msgType == PLAYER_QUIT) {
                 pID = sfPacket_readInt32(packetReceive);
 
-                LINKED_LIST_ITERATOR* iterator;
-                ls_iterator_init(iterator, app->otherTanks);
-                while (ls_iterator_has_next(iterator)) {
-                    TANK* tank = ls_iterator_move_next(iterator);
+                LINKED_LIST_ITERATOR iterator;
+                ls_iterator_init(&iterator, app->otherTanks);
+                while (ls_iterator_has_next(&iterator)) {
+                    TANK* tank = *(TANK**)ls_iterator_move_next(&iterator);
                     tank_lock_mutex(tank);
                     if (tank_get_player_id(tank) == pID) {
                         tank_set_left(tank, true);
                     }
                     tank_unlock_mutex(tank);
                 }
-                ls_iterator_destroy(iterator);
             }
         }
         usleep(20 * 1000);
     }
     sfPacket_destroy(packetReceive);
+    return 0;
 }
 
-void app_send_data(APPLICATION* app) {
-//    sfPacket* packetReceive = sfPacket_create();
+void* app_send_data(void* application) {
+    APPLICATION* app = application;
     sfPacket* packetSend = sfPacket_create();
-    sfIpAddress ipAddress = sfIpAddress_Any;
     float posX, posY;
     bool continueWithSending = true;
 
@@ -658,6 +685,7 @@ void app_send_data(APPLICATION* app) {
         while (!app->sendDataBool) {
             pthread_cond_wait(app->sendDataCond, app->mutex);
         }
+        pthread_mutex_unlock(app->mutex);
 
         if (app->window != NULL && app->clientTank != NULL) {
             sfPacket_clear(packetSend);
@@ -681,16 +709,16 @@ void app_send_data(APPLICATION* app) {
                 sfPacket_writeFloat(packetSend, posX);
                 sfPacket_writeFloat(packetSend, posY);
                 sfPacket_writeInt32(packetSend, tank_get_direction(app->clientTank));
-                sfPacket_writeBool(bullet_was_fired(tank_get_bullet(app->clientTank)) &&
+                sfPacket_writeBool(packetSend, bullet_was_fired(tank_get_bullet(app->clientTank)) &&
                                     !bullet_was_fired_and_sent(tank_get_bullet(app->clientTank)));
 
-                if (!bullet_was_fired(tank_get_bullet(app->clientTank)) &&
+                if (bullet_was_fired(tank_get_bullet(app->clientTank)) &&
                     !bullet_was_fired_and_sent(tank_get_bullet(app->clientTank))) {
                     bullet_set_was_fired_and_sent(tank_get_bullet(app->clientTank));
                 }
             }
 
-            if (sfUdpSocket_sendPacket(packetSend, app->socket, app->ipAddress, app->port) != sfSocketDone) {
+            if (sfUdpSocket_sendPacket(app->socket, packetSend, app->ipAddress, app->port) != sfSocketDone) {
                 fprintf(stderr, "Sending failed.\n");
             }
             usleep(20 * 1000);
@@ -698,31 +726,32 @@ void app_send_data(APPLICATION* app) {
         app->sendDataBool = false;
     }
     sfPacket_destroy(packetSend);
+    return 0;
 }
 
-void app_update_positions_of_tanks(APPLICATION* app) {
-    sfPacket* packetReceive = sfPacket_create();
-    sfPacket* packetSend = sfPacket_create();
-    sfIpAddress ipAddress = sfIpAddress_Any;
-    unsigned short port;
-    float posX, posY;
+void app_run(APPLICATION* app, sfIpAddress ipAddress, int port, char* playerName) {
+    app->ipAddress = ipAddress;
+    app->port = port;
+    app->sendDataBool = false;
+//    sfText_setString(app->nameOfPlayer, playerName);
+    tank_set_player_name(app->clientTank, playerName);
 
-    if (sfUdpSocket_receivePacket(app->socket, packetReceive, ipAddress, port) == sfSocketDone) {}
-    sfPacket_clear(packetReceive);
-    sfPacket_clear(packetSend);
+    app_communication_with_server(app);
 
-    posX = sfSprite_getPosition(tank_get_sprite(app->clientTank)).x;
-    posY = sfSprite_getPosition(tank_get_sprite(app->clientTank)).y;
+    app->mutex = malloc(sizeof(pthread_mutex_t));
+    pthread_mutex_init(app->mutex, NULL);
+    app->sendDataCond = malloc(sizeof(pthread_cond_t));
+    pthread_cond_init(app->sendDataCond, NULL);
 
-    sfPacket_writeInt32(packetSend, tank_get_player_id(app->clientTank));
-    sfPacket_writeFloat(packetSend, posX);
-    sfPacket_writeFloat(packetSend, posY);
-    sfPacket_writeInt32(tank_get_direction(app->clientTank));
+    if (app->isRunning) {
+        pthread_t renderingThread, receivingThread, sendingThread;
 
-    if (sfUdpSocket_sendPacket(app->socket, packetSend, app->ipAddress, app->port) != sfSocketDone) {
-        fprintf(stderr, "Sending failed.\n");
+        pthread_create(&renderingThread, NULL, app_render, app);
+        pthread_create(&receivingThread, NULL, app_receive_data, app);
+        pthread_create(&sendingThread, NULL, app_send_data, app);
+
+        pthread_join(receivingThread, NULL);
+        pthread_join(sendingThread, NULL);
+        pthread_join(renderingThread, NULL);
     }
-
-    sfPacket_destroy(packetReceive);
-    sfPacket_destroy(packetSend);
 }
