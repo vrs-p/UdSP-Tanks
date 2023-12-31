@@ -744,6 +744,7 @@ void app_run(APPLICATION* app, sfIpAddress ipAddress, int port, char* playerName
     pthread_cond_init(app->sendDataCond, NULL);
 
     if (app->isRunning) {
+        printf("Game is running with: %d players\n", app->numberOfPlayers);
         pthread_t renderingThread, receivingThread, sendingThread;
 
         pthread_create(&renderingThread, NULL, app_render, app);

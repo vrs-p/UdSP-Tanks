@@ -299,7 +299,7 @@ void app_wait_for_clients(APPLICATION *app) {
         sfPacket_writeFloat(app->packetSend, positionY);
         sfPacket_writeInt32(app->packetSend, count + 1);
         sfPacket_writeInt32(app->packetSend, (int)tmpDir);
-        sfPacket_writeInt32(app->packetSend, app->numberOfLeftPlayers);
+        sfPacket_writeInt32(app->packetSend, app->numberOfPlayers);
 
         char tmpIpStr[50];
         sfIpAddress_toString(tmpIp, tmpIpStr);
@@ -389,6 +389,7 @@ void app_start(APPLICATION *app) {
     app_update_position_of_tanks(app);
     app_initialize_game(app);
     if (app->isRunning) {
+        printf("Game is running with: %d players\n", app->numberOfPlayers);
         pthread_t sendDataThread, receiveDataThread;
         pthread_create(&receiveDataThread, NULL, app_receive_data, app);
         pthread_create(&sendDataThread, NULL, app_send_data, app);

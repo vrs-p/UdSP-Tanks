@@ -24,6 +24,9 @@ add_executable(client_side main.c
         windows/elements/textbox.h
         ../common/linked_list/linked_list.c
         ../common/linked_list/linked_list.h
+        ../common/base/server_message_types.h
+        server_controller/server_controller.c
+        server_controller/server_controller.h
 )
 
 target_link_libraries(client_side csfml-system csfml-network csfml-graphics)
