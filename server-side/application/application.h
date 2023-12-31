@@ -12,6 +12,7 @@
 typedef struct application {
     bool isRunning;
     int numberOfLeftPlayers;
+    int numberOfPlayers;
 
     LINKED_LIST* players;
 
@@ -25,11 +26,14 @@ typedef struct application {
     sfIpAddress ipAddress;
 } APPLICATION;
 
-void app_create(APPLICATION* app);
+void app_create(APPLICATION* app, int numberOfPlayers);
+void* app_create_controller(void* data);
 void app_destroy(APPLICATION* app);
+void app_destroy_void(void* app);
 
-void app_run(APPLICATION* app);
-void app_initialize_socket(APPLICATION* app);
+void app_run(APPLICATION* app, unsigned short port);
+void app_start(APPLICATION* app);
+bool app_initialize_socket(APPLICATION* app, unsigned short port);
 void app_initialize_game(APPLICATION* app);
 void app_update_position_of_tanks(APPLICATION* app);
 void app_wait_for_clients(APPLICATION* app);
