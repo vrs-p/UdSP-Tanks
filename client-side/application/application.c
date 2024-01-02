@@ -15,10 +15,11 @@ void app_create(APPLICATION* app) {
     app->isRunning = true;
     app->playerWasKilled = false;
 
-//    app->font = sfFont_createFromFile("../font/consola.ttf");
-//    sfText_setFont(app->nameOfPlayer, app->font);
-//    sfText_setCharacterSize(app->nameOfPlayer, 11);
-//    sfText_setFillColor(app->nameOfPlayer, sfWhite);
+    app->font = sfFont_createFromFile("../font/consola.ttf");
+    app->nameOfPlayer = sfText_create();
+    sfText_setFont(app->nameOfPlayer, app->font);
+    sfText_setCharacterSize(app->nameOfPlayer, 11);
+    sfText_setFillColor(app->nameOfPlayer, sfWhite);
 
     app->clientTank = malloc(sizeof(TANK));
     tank_create(app->clientTank);
@@ -459,51 +460,51 @@ void app_draw(APPLICATION* app) {
 
     tank_render(app->clientTank, app->window, map_get_list_of_walls(app->map));
 
-//    float tankPosX = sfSprite_getPosition(tank_get_sprite(app->clientTank)).x;
-//    float tankPosY = sfSprite_getPosition(tank_get_sprite(app->clientTank)).y;
-//    float tankSizeX = (float)sfTexture_getSize(sfSprite_getTexture(tank_get_sprite(app->clientTank))).x
-//                      * sfSprite_getScale(tank_get_sprite(app->clientTank)).x;
-//    float tankSizeY = (float)sfTexture_getSize(sfSprite_getTexture(tank_get_sprite(app->clientTank))).y
-//                      * sfSprite_getScale(tank_get_sprite(app->clientTank)).y;
+    float tankPosX = sfSprite_getPosition(tank_get_sprite(app->clientTank)).x;
+    float tankPosY = sfSprite_getPosition(tank_get_sprite(app->clientTank)).y;
+    float tankSizeX = (float)sfTexture_getSize(sfSprite_getTexture(tank_get_sprite(app->clientTank))).x
+                      * sfSprite_getScale(tank_get_sprite(app->clientTank)).x;
+    float tankSizeY = (float)sfTexture_getSize(sfSprite_getTexture(tank_get_sprite(app->clientTank))).y
+                      * sfSprite_getScale(tank_get_sprite(app->clientTank)).y;
 
-//    switch (tank_get_direction(app->clientTank)) {
-//        case UP: {
-//            sfVector2f vec = {tankPosX + tankSizeX / 2 - sfText_getLocalBounds(app->nameOfPlayer).width / 2,
-//                              tankPosY + tankSizeY + 5};
-//            sfText_setPosition(app->nameOfPlayer, vec);
-//            break;
-//        }
-//        case DOWN: {
-//            sfVector2f vec = {tankPosX - tankSizeX / 2 - sfText_getLocalBounds(app->nameOfPlayer).width / 2,
-//                              tankPosY - tankSizeY - sfText_getLocalBounds(app->nameOfPlayer).height - 10};
-//            sfText_setPosition(app->nameOfPlayer, vec);
-//            break;
-//        }
-//        case LEFT: {
-//            if (sfText_getLocalBounds(app->nameOfPlayer).width <= tankSizeY) {
-//                sfVector2f vec = {tankPosX + tankSizeY - sfText_getLocalBounds(app->nameOfPlayer).width, tankPosY + 5};
-//                sfText_setPosition(app->nameOfPlayer, vec);
-//            } else {
-//                sfVector2f vec = {tankPosX + tankSizeY / 2 - sfText_getLocalBounds(app->nameOfPlayer).width / 2,
-//                                  tankPosY + 5};
-//                sfText_setPosition(app->nameOfPlayer, vec);
-//            }
-//            break;
-//        }
-//        case RIGHT: {
-//            if (sfText_getLocalBounds(app->nameOfPlayer).width <= tankSizeY) {
-//                sfVector2f vec = {tankPosX - tankSizeY, tankPosY + tankSizeX + 5};
-//                sfText_setPosition(app->nameOfPlayer, vec);
-//            } else {
-//                sfVector2f vec = {tankPosX - tankSizeY / 2 - sfText_getLocalBounds(app->nameOfPlayer).width / 2,
-//                                  tankPosY + tankSizeX + 5};
-//                sfText_setPosition(app->nameOfPlayer, vec);
-//            }
-//            break;
-//        }
-//    }
+    switch (tank_get_direction(app->clientTank)) {
+        case UP: {
+            sfVector2f vec = {tankPosX + tankSizeX / 2 - sfText_getLocalBounds(app->nameOfPlayer).width / 2,
+                              tankPosY + tankSizeY + 5};
+            sfText_setPosition(app->nameOfPlayer, vec);
+            break;
+        }
+        case DOWN: {
+            sfVector2f vec = {tankPosX - tankSizeX / 2 - sfText_getLocalBounds(app->nameOfPlayer).width / 2,
+                              tankPosY - tankSizeY - sfText_getLocalBounds(app->nameOfPlayer).height - 10};
+            sfText_setPosition(app->nameOfPlayer, vec);
+            break;
+        }
+        case LEFT: {
+            if (sfText_getLocalBounds(app->nameOfPlayer).width <= tankSizeY) {
+                sfVector2f vec = {tankPosX + tankSizeY - sfText_getLocalBounds(app->nameOfPlayer).width, tankPosY + 5};
+                sfText_setPosition(app->nameOfPlayer, vec);
+            } else {
+                sfVector2f vec = {tankPosX + tankSizeY / 2 - sfText_getLocalBounds(app->nameOfPlayer).width / 2,
+                                  tankPosY + 5};
+                sfText_setPosition(app->nameOfPlayer, vec);
+            }
+            break;
+        }
+        case RIGHT: {
+            if (sfText_getLocalBounds(app->nameOfPlayer).width <= tankSizeY) {
+                sfVector2f vec = {tankPosX - tankSizeY, tankPosY + tankSizeX + 5};
+                sfText_setPosition(app->nameOfPlayer, vec);
+            } else {
+                sfVector2f vec = {tankPosX - tankSizeY / 2 - sfText_getLocalBounds(app->nameOfPlayer).width / 2,
+                                  tankPosY + tankSizeX + 5};
+                sfText_setPosition(app->nameOfPlayer, vec);
+            }
+            break;
+        }
+    }
 
-//    sfRenderWindow_drawText(app->nameOfPlayer); TODO: fix it
+    sfRenderWindow_drawText(app->window, app->nameOfPlayer, NULL);
 
     LINKED_LIST_ITERATOR iterator;
     ls_iterator_init(&iterator, app->otherTanks);
@@ -733,7 +734,7 @@ void app_run(APPLICATION* app, sfIpAddress ipAddress, int port, char* playerName
     app->ipAddress = ipAddress;
     app->port = port;
     app->sendDataBool = false;
-//    sfText_setString(app->nameOfPlayer, playerName);
+    sfText_setString(app->nameOfPlayer, playerName);
     tank_set_player_name(app->clientTank, playerName);
 
     app_communication_with_server(app);
