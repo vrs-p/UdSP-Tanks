@@ -101,7 +101,9 @@ void map_create(MAP *map) {
 }
 
 void map_destroy_rectangle_shape(void *shape) {
-    sfRectangleShape_destroy(shape);
+    sfRectangleShape* rShape = *(sfRectangleShape**)shape;
+    sfRectangleShape_destroy(rShape);
+    free(rShape);
 }
 
 void map_destroy(MAP *map) {

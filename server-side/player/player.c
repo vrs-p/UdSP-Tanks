@@ -9,11 +9,12 @@
 void player_create(PLAYER *player, int id, char *playerName, float xPosition, float yPosition, DIRECTION direction,
                    unsigned short port, sfIpAddress ipAddress) {
     player->id = id;
-    player->playerName = malloc(sizeof(char) * strlen(playerName));
+    player->playerName = malloc(sizeof(char) * strlen(playerName) + 1);
     strcpy(player->playerName, playerName);
 
     player->connection = malloc(sizeof(CONNECTION));
     player->position = malloc(sizeof(POSITION));
+    player->initialPosition = malloc(sizeof(POSITION));
 
     player->position->xPosition = xPosition;
     player->position->yPosition = yPosition;
@@ -35,7 +36,7 @@ void player_destroy(PLAYER *player) {
     player->position = NULL;
 
     free(player->connection);
-    player->position = NULL;
+    player->connection = NULL;
 
     free(player->initialPosition);
     player->initialPosition = NULL;
@@ -88,7 +89,6 @@ void player_update_position(PLAYER *player, float xPosition, float yPosition, DI
 }
 
 void player_set_initial_position(PLAYER *player, float xPosition, float yPosition, DIRECTION direction) {
-    player->initialPosition = malloc(sizeof(POSITION));
     player->initialPosition->xPosition = xPosition;
     player->initialPosition->yPosition = yPosition;
     player->initialPosition->direction = direction;
@@ -138,5 +138,7 @@ void player_unlock_mutex(PLAYER *player) {
 }
 
 void player_destroy_void(void *player) {
-    player_destroy((PLAYER*)player);
+    PLAYER* pPlayer = *(PLAYER**)player;
+    player_destroy(pPlayer);
+    free(pPlayer);
 }

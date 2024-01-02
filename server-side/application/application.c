@@ -27,21 +27,25 @@ void app_create(APPLICATION *app, int numberOfPlayers) {
 void app_destroy(APPLICATION *app) {
     ls_run_function(app->players, player_destroy_void);
     ls_destroy(app->players);
+    free(app->players);
     app->players = NULL;
 
+    pthread_mutex_destroy(app->mutex);
     free(app->mutex);
     app->mutex = NULL;
 
+    pthread_cond_destroy(app->sendDataCond);
     free(app->sendDataCond);
     app->sendDataCond = NULL;
 
-//    free(app->packetReceive);
     sfPacket_destroy(app->packetReceive);
     app->packetReceive = NULL;
 
-//    free(app->packetSend);
     sfPacket_destroy(app->packetSend);
     app->packetSend = NULL;
+
+    sfUdpSocket_destroy(app->socket);
+    app->socket = NULL;
 }
 
 void* app_send_data(void *app) {
@@ -380,7 +384,9 @@ void app_update_position_of_tanks(APPLICATION *app) {
 }
 
 void app_destroy_void(void *app) {
-    app_destroy((APPLICATION*) app);
+    APPLICATION* application = *(APPLICATION**)app;
+    app_destroy(application);
+    free(application);
 }
 
 
