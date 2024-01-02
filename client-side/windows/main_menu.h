@@ -17,9 +17,11 @@ typedef struct mmenu {
 
     BUTTON* btnCrtServer;
     BUTTON* btnJoinServer;
+    BUTTON* btnKillServer;
 
     bool create;
     bool join;
+    bool kill;
     bool appClosed;
 } MMENU;
 
@@ -30,5 +32,6 @@ void mmenu_render(MMENU* mmenu);
 bool mmenu_get_closed(MMENU* mmenu);
 bool mmenu_get_create(MMENU* mmenu);
 bool mmenu_get_join(MMENU* mmenu);
+bool mmenu_get_kill(MMENU* mmenu);
 
 #endif //CLIENT_SIDE_MAIN_MENU_H

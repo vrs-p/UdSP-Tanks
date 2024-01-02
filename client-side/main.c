@@ -21,9 +21,6 @@ int main() {
                                          menu_get_num_players(menu));
                 controller_join_server(menu_get_ip_address(menu), menu_get_new_port(menu), menu_get_name(menu));
             }
-            if (!controller_kill_server(menu_get_ip_address(menu), menu_get_port(menu))) {
-                //TODO: kill all connections to server (or wait for others to leave - not preferred :D)
-            }
             menu_destroy(menu);
         } else if (mmenu_get_join(mmenu)) {
             MENU* menu = malloc(sizeof(MENU));
@@ -33,6 +30,8 @@ int main() {
                 controller_join_server(menu_get_ip_address(menu), menu_get_port(menu), menu_get_name(menu));
             }
             menu_destroy(menu);
+        } else if (mmenu_get_kill(mmenu)) {
+            controller_kill_server(sfIpAddress_fromString("127.0.0.1"), 13877);
         }
     }
 

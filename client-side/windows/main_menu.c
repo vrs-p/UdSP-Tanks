@@ -10,6 +10,7 @@
 void mmenu_create(MMENU* mmenu) {
     mmenu->create = false;
     mmenu->join = false;
+    mmenu->kill = false;
     mmenu->appClosed = false;
     mmenu->font = sfFont_createFromFile("../font/consola.ttf");
 
@@ -34,6 +35,15 @@ void mmenu_create(MMENU* mmenu) {
     btn_set_position(mmenu->btnCrtServer, vec);
     vec.x = SCREEN_WIDTH - sfRectangleShape_getSize(btn_get(mmenu->btnJoinServer)).x - 150.f;
     btn_set_position(mmenu->btnJoinServer, vec);
+
+    mmenu->btnKillServer = malloc(sizeof(BUTTON));
+    vec.x = 300.f;
+    vec.y = 50.f;
+    btn_create(mmenu->btnKillServer, vec, sfColor_fromRGB(192, 192, 192), "Kill Server", 24, sfBlack);
+    btn_set_font(mmenu->btnKillServer, mmenu->font);
+    vec.x = SCREEN_WIDTH / 2 - sfRectangleShape_getLocalBounds(btn_get(mmenu->btnKillServer)).width / 2;
+    vec.y = sfRectangleShape_getPosition(btn_get(mmenu->btnJoinServer)).y + sfRectangleShape_getSize(btn_get(mmenu->btnJoinServer)).y + 50;
+    btn_set_position(mmenu->btnKillServer, vec);
 }
 
 void mmenu_destroy(MMENU* mmenu) {
@@ -41,6 +51,8 @@ void mmenu_destroy(MMENU* mmenu) {
     mmenu->btnCrtServer = NULL;
     btn_destroy(mmenu->btnJoinServer);
     mmenu->btnJoinServer = NULL;
+    btn_destroy(mmenu->btnKillServer);
+    mmenu->btnKillServer = NULL;
 
     sfText_destroy(mmenu->tittle);
     mmenu->tittle = NULL;
@@ -70,18 +82,23 @@ void mmenu_validate(MMENU* mmenu) {
     } else if (btn_is_mouse_over(mmenu->btnJoinServer, mmenu->window)) {
         btn_set_bg_color(mmenu->btnJoinServer, sfColor_fromRGB(0, 153, 0));
         btn_set_text_color(mmenu->btnJoinServer, sfWhite);
+    } else if (btn_is_mouse_over(mmenu->btnKillServer, mmenu->window)) {
+        btn_set_bg_color(mmenu->btnKillServer, sfColor_fromRGB(153, 0, 0));
+        btn_set_text_color(mmenu->btnKillServer, sfWhite);
     } else {
         btn_set_bg_color(mmenu->btnCrtServer, sfColor_fromRGB(0, 255, 0));
         btn_set_text_color(mmenu->btnCrtServer, sfBlack);
         btn_set_bg_color(mmenu->btnJoinServer, sfColor_fromRGB(0, 255, 0));
         btn_set_text_color(mmenu->btnJoinServer, sfBlack);
+        btn_set_bg_color(mmenu->btnKillServer, sfColor_fromRGB(255, 0, 0));
+        btn_set_text_color(mmenu->btnKillServer, sfBlack);
     }
 }
 
 void mmenu_render(MMENU* mmenu) {
     mmenu_initialize_window(mmenu);
 
-    while (!mmenu->create && !mmenu->join && !mmenu->appClosed) {
+    while (!mmenu->create && !mmenu->join && !mmenu->appClosed && !mmenu->kill) {
         sfRenderWindow_clear(mmenu->window, sfBlack);
 
         mmenu_validate(mmenu);
@@ -90,6 +107,8 @@ void mmenu_render(MMENU* mmenu) {
         sfRenderWindow_drawText(mmenu->window, btn_get_text(mmenu->btnCrtServer), NULL);
         sfRenderWindow_drawRectangleShape(mmenu->window, btn_get(mmenu->btnJoinServer), NULL);
         sfRenderWindow_drawText(mmenu->window, btn_get_text(mmenu->btnJoinServer), NULL);
+        sfRenderWindow_drawRectangleShape(mmenu->window, btn_get(mmenu->btnKillServer), NULL);
+        sfRenderWindow_drawText(mmenu->window, btn_get_text(mmenu->btnKillServer), NULL);
 
         sfRenderWindow_display(mmenu->window);
 
@@ -102,6 +121,8 @@ void mmenu_render(MMENU* mmenu) {
                     mmenu->create = true;
                 } else if (btn_is_mouse_over(mmenu->btnJoinServer, mmenu->window)) {
                     mmenu->join = true;
+                } else if (btn_is_mouse_over(mmenu->btnKillServer, mmenu->window)) {
+                    mmenu->kill = true;
                 }
             } else if (event.type == sfEvtClosed) {
                 mmenu->appClosed = true;
@@ -123,6 +144,10 @@ bool mmenu_get_create(MMENU* mmenu) {
 
 bool mmenu_get_join(MMENU* mmenu) {
     return mmenu->join;
+}
+
+bool mmenu_get_kill(MMENU* mmenu) {
+    return mmenu->kill;
 }
 
 #undef SCREEN_WIDTH
