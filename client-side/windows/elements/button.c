@@ -5,10 +5,12 @@
 #include "button.h"
 
 void btn_create(BUTTON* btn, sfVector2f size, sfColor bgColor, char* text, int characterSize, sfColor textColor) {
+    btn->text = sfText_create();
     sfText_setString(btn->text, text);
     sfText_setFillColor(btn->text, textColor);
     sfText_setCharacterSize(btn->text, characterSize);
 
+    btn->button = sfRectangleShape_create();
     sfRectangleShape_setSize(btn->button, size);
     sfRectangleShape_setFillColor(btn->button, bgColor);
 

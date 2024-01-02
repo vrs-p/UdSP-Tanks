@@ -14,6 +14,8 @@ add_executable(client_side main.c
         map/map.h
         tank/tank.c
         tank/tank.h
+        windows/main_menu.c
+        windows/main_menu.h
         windows/menu.c
         windows/menu.h
         windows/show_score.c

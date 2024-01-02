@@ -4,34 +4,37 @@
 
 #include "textbox.h"
 
-void txtBox_create(TEXTBOX* txtbox, int size, sfColor color, bool isSelected) {
-//    sfText_setCharacterSize(txtbox->textBox, size);
-//    sfText_setFillColor(txtbox->textBox, color);
-//    txtbox->isSelected = isSelected;
-//
-//    if (txtbox->isSelected) {
-//        sfText_setString(txtbox->textBox, "_");
-//    } else {
-//        sfText_setString(txtbox->textBox, "");
-//    }
-//
-//    txtbox->textBox.setCharacterSize(size);
-//    this->textBox_.setFillColor(color);
-//    this->isSelected_ = isSelected;
-//
-//    if (isSelected) {
-//        this->textBox_.setString("_");
-//    } else {
-//        this->textBox_.setString("");
-//    }
+void txtbox_create(TEXTBOX* txtbox, int limit, int size, sfColor color, sfFont* font, bool isSelected) {
+    txtbox->textBox = sfText_create();
+    sfText_setFont(txtbox->textBox, font);
+    sfText_setCharacterSize(txtbox->textBox, size);
+    sfText_setFillColor(txtbox->textBox, color);
+    sfText_setString(txtbox->textBox, "");
+    txtbox->isSelected = isSelected;
+
+    txtbox->text = malloc((limit + 1) * sizeof(char));
+    char tmp[] = "";
+    strcpy(txtbox->text, tmp);
+    txtbox->hasLimit = true;
+    txtbox->limit = limit;
+
+    if (txtbox->isSelected) {
+        sfText_setString(txtbox->textBox, "_");
+    } else {
+        sfText_setString(txtbox->textBox, "");
+    }
 }
 
-void txtBox_destroy(TEXTBOX* txtbox) {
+void txtbox_destroy(TEXTBOX* txtbox) {
     sfText_destroy(txtbox->textBox);
     txtbox->textBox = NULL;
 
     free(txtbox->text);
     txtbox->text = NULL;
+}
+
+void txtbox_destroy_void(void* txtbox) {
+    txtbox_destroy(*(TEXTBOX**)txtbox);
 }
 
 void txtbox_set_font(TEXTBOX* txtbox, sfFont* font) {
@@ -48,27 +51,20 @@ void txtbox_set_limit_bool(TEXTBOX* txtbox, bool hasLimit) {
 
 void txtbox_set_limit_int(TEXTBOX* txtbox, int limit) {
     txtbox->hasLimit = true;
-    txtbox->limit = limit - 1;
+    txtbox->limit = limit;
+    txtbox->text = realloc(txtbox->text, (limit + 1) * sizeof(char));
 }
 
 void txtbox_set_selected(TEXTBOX* txtbox, bool isSelected) {
     txtbox->isSelected = isSelected;
 
-    if (!isSelected) {
-        char oldText[100];
-        strcpy(oldText, txtbox->text);
-        char newText[100] = "";
-
-        for (int i = 0; i < strlen(oldText); ++i) {
-            newText[i] = oldText[i];
-        }
-
-        sfText_setString(txtbox->textBox, newText);
-    } else {
-        char tmpText[100];
+    if (isSelected) {
+        char tmpText[txtbox->limit + 2];
         strcpy(tmpText, txtbox->text);
         strcat(tmpText, "_");
         sfText_setString(txtbox->textBox, tmpText);
+    } else {
+        sfText_setString(txtbox->textBox, txtbox->text);
     }
 }
 
@@ -78,41 +74,47 @@ void txtbox_set_initial_text(TEXTBOX* txtbox, char* text) {
 }
 
 void txtbox_delete_last_character(TEXTBOX* txtbox) {
-    char oldText[100];
-    strcpy(oldText, txtbox->text);
-    char newText[100] = "";
-
-    for (int i = 0; i < strlen(oldText) - 1; ++i) {
-        newText[i] = oldText[i];
+    size_t len = strlen(txtbox->text);
+    char tmp[len];
+    if (len > 0) {
+        strncpy(tmp, txtbox->text, len - 1);
+        tmp[len - 1] = '\0';
     }
 
-    strcpy(txtbox->text, newText);
+    strcpy(txtbox->text, tmp);
     sfText_setString(txtbox->textBox, txtbox->text);
 }
 
-void txtbox_input_logic(TEXTBOX* txtbox, int charTyped) {
-//    if (charTyped != sfKeyBackspace && charTyped != sfKeyEnter && charTyped != sfKeyEscape) {
-//        strcat(txtbox->text, charTyped);
-//    } else if (charTyped == sfKeyBackspace) {
-//        if (strlen(txtbox->text) > 0) {
-//            txtbox_delete_last_character(txtbox);
-//        }
-//    }
-//    sfText_setString(txtbox->textBox, txtbox->text + "_");
+void txtbox_input_logic(TEXTBOX* txtbox, sfEvent event) {
+    if (event.text.unicode != 8 && event.text.unicode != 27) {
+        char str[2];
+        str[0] = (char)event.text.unicode;
+        str[1] = '\0';
+        strcat(txtbox->text, str);
+    } else if (event.text.unicode == 8) {
+        if (strlen(txtbox->text) > 0) {
+            txtbox_delete_last_character(txtbox);
+        }
+    }
+
+    char tmpText[txtbox->limit + 2];
+    strcpy(tmpText, txtbox->text);
+    strcat(tmpText, "_");
+    sfText_setString(txtbox->textBox, tmpText);
 }
 
 void txtbox_typed(TEXTBOX* txtbox, sfEvent event) {
     if (txtbox->isSelected) {
-        int charTyped = event.text.unicode;
-        if (charTyped < 128) {
+        unsigned int charTyped = event.text.unicode;
+        if (charTyped == 8 || charTyped == 27 || (charTyped >= 32 && charTyped <= 122) || (charTyped >= 192 && charTyped <= 255)) {
             if (txtbox->hasLimit) {
-                if (strlen(txtbox->text) <= txtbox->limit) {
-                    txtbox_input_logic(txtbox, charTyped);
-                } else if (strlen(txtbox->text) > txtbox->limit && charTyped == sfKeyBackspace) {
+                if (strlen(txtbox->text) < txtbox->limit) {
+                    txtbox_input_logic(txtbox, event);
+                } else if (strlen(txtbox->text) >= txtbox->limit && charTyped == 8) {
                     txtbox_delete_last_character(txtbox);
                 }
             } else {
-                txtbox_input_logic(txtbox, charTyped);
+                txtbox_input_logic(txtbox, event);
             }
         }
     }
