@@ -116,7 +116,7 @@ void menu_create(MENU* menu, bool create) {
     text = *(TEXTBOX**)ls_access_at_2(menu->textboxes, 1);
     vec = (sfVector2f){sfText_getLocalBounds(menu->ipAddressText).width + xSpace, SCREEN_HEIGHT / 2 - sfText_getLocalBounds(menu->ipAddressText).height * 7};
     txtbox_set_position(text, vec);
-    txtbox_set_initial_text(text, "158.193.128.160");
+    txtbox_set_initial_text(text, "127.0.0.1");
 
     text = *(TEXTBOX**)ls_access_at_2(menu->textboxes, 2);
     vec = (sfVector2f){sfText_getLocalBounds(menu->portText).width + xSpace, SCREEN_HEIGHT / 2 - sfText_getLocalBounds(menu->portText).height * 4};
@@ -372,38 +372,32 @@ bool menu_get_started(MENU* menu) {
 }
 
 sfIpAddress menu_get_ip_address(MENU* menu) {
-    TEXTBOX* textbox = NULL;
-    ls_access_at(menu->textboxes, (void**)&textbox, 1);
+    TEXTBOX* textbox = *(TEXTBOX**)ls_access_at_2(menu->textboxes, 1);
     return sfIpAddress_fromString(txtbox_get_text(textbox));
 }
 
 int menu_get_port(MENU* menu) {
-    TEXTBOX* textbox = NULL;
-    ls_access_at(menu->textboxes, (void**)&textbox, 2);
+    TEXTBOX* textbox = *(TEXTBOX**)ls_access_at_2(menu->textboxes, 2);
     return atoi(txtbox_get_text(textbox));
 }
 
 int menu_get_new_port(MENU* menu) {
-    TEXTBOX* textbox = NULL;
-    ls_access_at(menu->textboxes, (void**)&textbox, 3);
+    TEXTBOX* textbox = *(TEXTBOX**)ls_access_at_2(menu->textboxes, 3);
     return atoi(txtbox_get_text(textbox));
 }
 
 char* menu_get_name(MENU* menu) {
-    TEXTBOX* textbox = NULL;
-    ls_access_at(menu->textboxes, (void**)&textbox, 0);
+    TEXTBOX* textbox = *(TEXTBOX**)ls_access_at_2(menu->textboxes, 0);
     return txtbox_get_text(textbox);
 }
 
 int menu_get_num_players(MENU* menu) {
-    TEXTBOX* textbox = NULL;
-    ls_access_at(menu->textboxes, (void**)&textbox, 4);
+    TEXTBOX* textbox = *(TEXTBOX**)ls_access_at_2(menu->textboxes, 4);
     return atoi(txtbox_get_text(textbox));
 }
 
 int menu_get_id_map(MENU* menu) {
-    TEXTBOX* textbox = NULL;
-    ls_access_at(menu->textboxes, (void**)&textbox, 5);
+    TEXTBOX* textbox = *(TEXTBOX**)ls_access_at_2(menu->textboxes, 5);
     return atoi(txtbox_get_text(textbox));
 }
 

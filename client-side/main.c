@@ -19,7 +19,7 @@ int main() {
             if (!menu_get_app_closed(menu) && menu_get_started(menu)) {
                 controller_create_server(menu_get_ip_address(menu), menu_get_port(menu), menu_get_new_port(menu),
                                          menu_get_num_players(menu));
-                controller_join_server(menu_get_ip_address(menu), menu_get_port(menu), menu_get_name(menu));
+                controller_join_server(menu_get_ip_address(menu), menu_get_new_port(menu), menu_get_name(menu));
             }
             menu_destroy(menu);
         } else if (mmenu_get_join(mmenu)) {
