@@ -1,9 +1,11 @@
 #include "application/application.h"
+#include "server_controller/server_controller.h"
 
 int main() {
-    APPLICATION app;
-    app_create(&app);
+    SERVER_CONTROLLER controller;
+    controller_create(&controller);
+    controller_start(&controller);
 
-    app_run(&app);
+    controller_destroy(&controller);
     return 0;
 }

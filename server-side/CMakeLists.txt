@@ -14,6 +14,10 @@ add_executable(server_side main.c
         application/application.h
         ../common/linked_list/linked_list.c
         ../common/linked_list/linked_list.h
-        application/application.c)
+        application/application.c
+        server_controller/server_controller.c
+        server_controller/server_controller.h
+        ../common/base/server_message_types.h
+)
 
 target_link_libraries(server_side csfml-system csfml-network)

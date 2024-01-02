@@ -14,6 +14,8 @@ add_executable(client_side main.c
         map/map.h
         tank/tank.c
         tank/tank.h
+        windows/main_menu.c
+        windows/main_menu.h
         windows/menu.c
         windows/menu.h
         windows/show_score.c
@@ -24,6 +26,9 @@ add_executable(client_side main.c
         windows/elements/textbox.h
         ../common/linked_list/linked_list.c
         ../common/linked_list/linked_list.h
+        ../common/base/server_message_types.h
+        server_controller/server_controller.c
+        server_controller/server_controller.h
 )
 
 target_link_libraries(client_side csfml-system csfml-network csfml-graphics)

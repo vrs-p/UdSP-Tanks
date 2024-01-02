@@ -8,10 +8,11 @@
 #include <unistd.h>
 #include "application.h"
 
-void app_create(APPLICATION *app) {
+void app_create(APPLICATION *app, int numberOfPlayers) {
     app->isRunning = true;
     app->sendData = false;
     app->numberOfLeftPlayers = 0;
+    app->numberOfPlayers = numberOfPlayers;
 
     app->players = malloc(sizeof(LINKED_LIST));
     ls_create(app->players, sizeof(PLAYER*));
@@ -26,21 +27,25 @@ void app_create(APPLICATION *app) {
 void app_destroy(APPLICATION *app) {
     ls_run_function(app->players, player_destroy_void);
     ls_destroy(app->players);
+    free(app->players);
     app->players = NULL;
 
+    pthread_mutex_destroy(app->mutex);
     free(app->mutex);
     app->mutex = NULL;
 
+    pthread_cond_destroy(app->sendDataCond);
     free(app->sendDataCond);
     app->sendDataCond = NULL;
 
-//    free(app->packetReceive);
     sfPacket_destroy(app->packetReceive);
     app->packetReceive = NULL;
 
-//    free(app->packetSend);
     sfPacket_destroy(app->packetSend);
     app->packetSend = NULL;
+
+    sfUdpSocket_destroy(app->socket);
+    app->socket = NULL;
 }
 
 void* app_send_data(void *app) {
@@ -229,8 +234,8 @@ void* app_receive_data(void *app) {
     return 0;
 }
 
-void app_run(APPLICATION *app) {
-    app_initialize_socket(app);
+void app_run(APPLICATION *app, unsigned short port) {
+    app_initialize_socket(app, port);
     app_wait_for_clients(app);
     app_update_position_of_tanks(app);
     app_initialize_game(app);
@@ -245,30 +250,24 @@ void app_run(APPLICATION *app) {
     }
 }
 
-void app_initialize_socket(APPLICATION *app) {
+bool app_initialize_socket(APPLICATION *app, unsigned short port) {
     app->packetSend = sfPacket_create();
     app->packetReceive = sfPacket_create();
     app->ipAddress = sfIpAddress_fromString("0.0.0.0");
 
+//    13877
     app->socket = sfUdpSocket_create();
-    if (sfUdpSocket_bind(app->socket, 13877, app->ipAddress) != sfSocketDone) {
-        printf("Cannot binf port 13877\n");
-        return;
+    if (sfUdpSocket_bind(app->socket, port, app->ipAddress) != sfSocketDone) {
+        printf("Cannot bind port 13877\n");
+        return false;
     }
+    return true;
 }
 
 void app_wait_for_clients(APPLICATION *app) {
-    printf("Enter number of players (max 4): ");
-    int numberOfPlayers, count = 0;
-    scanf("%d", &numberOfPlayers);
+    int count = 0;
 
-    while (numberOfPlayers < 1 || numberOfPlayers > 4) {
-        printf("Incorrect input. Allowed number of players is in range 1-4\n");
-        printf("Enter number of players (max 4): ");
-        scanf("%d", &numberOfPlayers);
-    }
-
-    while (count < numberOfPlayers) {
+    while (count < app->numberOfPlayers) {
         float positionX, positionY;
         unsigned short tmpPort;
         sfIpAddress tmpIp = sfIpAddress_None; // Initialize to None
@@ -304,7 +303,7 @@ void app_wait_for_clients(APPLICATION *app) {
         sfPacket_writeFloat(app->packetSend, positionY);
         sfPacket_writeInt32(app->packetSend, count + 1);
         sfPacket_writeInt32(app->packetSend, (int)tmpDir);
-        sfPacket_writeInt32(app->packetSend, numberOfPlayers);
+        sfPacket_writeInt32(app->packetSend, app->numberOfPlayers);
 
         char tmpIpStr[50];
         sfIpAddress_toString(tmpIp, tmpIpStr);
@@ -382,6 +381,35 @@ void app_update_position_of_tanks(APPLICATION *app) {
 
         count++;
     }
+}
+
+void app_destroy_void(void *app) {
+    APPLICATION* application = *(APPLICATION**)app;
+    app_destroy(application);
+    free(application);
+}
+
+
+void app_start(APPLICATION *app) {
+    app_wait_for_clients(app);
+    app_update_position_of_tanks(app);
+    app_initialize_game(app);
+    if (app->isRunning) {
+        printf("Game is running with: %d players\n", app->numberOfPlayers);
+        pthread_t sendDataThread, receiveDataThread;
+        pthread_create(&receiveDataThread, NULL, app_receive_data, app);
+        pthread_create(&sendDataThread, NULL, app_send_data, app);
+
+        // wait for the end of the threads
+        pthread_detach(receiveDataThread);
+        pthread_detach(sendDataThread);
+    }
+}
+
+void* app_create_controller(void* data){
+    APPLICATION * app = (APPLICATION *)data;
+    app_start(app);
+    return 0;
 }
 
 #undef SCREEN_HEIGHT

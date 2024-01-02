@@ -6,6 +6,7 @@
 #define UDSP_TANKS_TEXTBOX_H
 
 #include <stdlib.h>
+#include <stdio.h>
 #include <stdbool.h>
 #include <string.h>
 #include <SFML/Graphics.h>
@@ -18,8 +19,9 @@ typedef struct textbox {
     int limit;
 } TEXTBOX;
 
-void txtBox_create(TEXTBOX* txtbox, int size, sfColor color, bool isSelected);
-void txtBox_destroy(TEXTBOX* txtbox);
+void txtbox_create(TEXTBOX* txtbox, int limit, int size, sfColor color, sfFont* font, bool isSelected);
+void txtbox_destroy(TEXTBOX* txtbox);
+void txtbox_destroy_void(void* txtbox);
 
 void txtbox_set_font(TEXTBOX* txtbox, sfFont* font);
 void txtbox_set_position(TEXTBOX* txtbox, sfVector2f position);
