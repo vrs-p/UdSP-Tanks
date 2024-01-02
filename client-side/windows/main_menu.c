@@ -124,7 +124,7 @@ void mmenu_render(MMENU* mmenu) {
                 } else if (btn_is_mouse_over(mmenu->btnKillServer, mmenu->window)) {
                     mmenu->kill = true;
                 }
-            } else if (event.type == sfEvtClosed) {
+            } else if (event.type == sfEvtClosed || event.text.unicode == 113) {
                 mmenu->appClosed = true;
             }
         }
@@ -148,6 +148,18 @@ bool mmenu_get_join(MMENU* mmenu) {
 
 bool mmenu_get_kill(MMENU* mmenu) {
     return mmenu->kill;
+}
+
+void mmenu_set_closed(MMENU* mmenu, bool state) {
+    mmenu->appClosed = state;
+}
+
+void mmenu_set_create(MMENU* mmenu, bool state) {
+    mmenu->create = state;
+}
+
+void mmenu_set_join(MMENU* mmenu, bool state) {
+    mmenu->join = state;
 }
 
 #undef SCREEN_WIDTH

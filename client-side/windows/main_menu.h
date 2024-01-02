@@ -33,5 +33,8 @@ bool mmenu_get_closed(MMENU* mmenu);
 bool mmenu_get_create(MMENU* mmenu);
 bool mmenu_get_join(MMENU* mmenu);
 bool mmenu_get_kill(MMENU* mmenu);
+void mmenu_set_closed(MMENU* mmenu, bool state);
+void mmenu_set_create(MMENU* mmenu, bool state);
+void mmenu_set_join(MMENU* mmenu, bool state);
 
 #endif //CLIENT_SIDE_MAIN_MENU_H
