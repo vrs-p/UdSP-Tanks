@@ -209,7 +209,7 @@ void ls_run_function(LINKED_LIST *self, void (*function)(void *)) {
     ls_iterator_init(&iterator, self);
     while (ls_iterator_has_next(&iterator)) {
         void* item = ls_iterator_move_next(&iterator);
-        function(*(void**)item);
+        function(item);
     }
 }
 

@@ -41,7 +41,9 @@ void tank_destroy(TANK *tank) {
 }
 
 void tank_destroy_void(void *tank) {
-    tank_destroy((TANK*)tank);
+    TANK* pTank = *(TANK**)tank;
+    tank_destroy(pTank);
+    free(pTank);
 }
 
 void tank_move_up(TANK *tank) {
