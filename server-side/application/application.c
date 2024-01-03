@@ -8,11 +8,12 @@
 #include <unistd.h>
 #include "application.h"
 
-void app_create(APPLICATION *app, int numberOfPlayers) {
+void app_create(APPLICATION *app, int numberOfPlayers, TYPE_OF_MAPS mapType) {
     app->isRunning = true;
     app->sendData = false;
     app->numberOfLeftPlayers = 0;
     app->numberOfPlayers = numberOfPlayers;
+    app->mapType = mapType;
 
     app->players = malloc(sizeof(LINKED_LIST));
     ls_create(app->players, sizeof(PLAYER*));
@@ -265,7 +266,9 @@ bool app_initialize_socket(APPLICATION *app, unsigned short port) {
 }
 
 void app_wait_for_clients(APPLICATION *app) {
+    srand(time(NULL));
     int count = 0;
+    int randomSeed = rand();
 
     while (count < app->numberOfPlayers) {
         float positionX, positionY;
@@ -304,6 +307,10 @@ void app_wait_for_clients(APPLICATION *app) {
         sfPacket_writeInt32(app->packetSend, count + 1);
         sfPacket_writeInt32(app->packetSend, (int)tmpDir);
         sfPacket_writeInt32(app->packetSend, app->numberOfPlayers);
+        sfPacket_writeInt32(app->packetSend, (int)app->mapType + 1);
+        if (app->mapType == RANDOM) {
+            sfPacket_writeInt32(app->packetSend, randomSeed);
+        }
 
         char tmpIpStr[50];
         sfIpAddress_toString(tmpIp, tmpIpStr);

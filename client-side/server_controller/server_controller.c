@@ -5,7 +5,7 @@
 #include <stdio.h>
 #include "server_controller.h"
 
-bool controller_create_server(sfIpAddress serverIp, unsigned short serverPort, unsigned short newPort, int numberOfPlayers) {
+bool controller_create_server(sfIpAddress serverIp, unsigned short serverPort, unsigned short newPort, int numberOfPlayers, TYPE_OF_MAPS mapType) {
     unsigned short tmpPort;
     sfUdpSocket* socket = sfUdpSocket_create();
     sfPacket* packet = sfPacket_create();
@@ -15,6 +15,7 @@ bool controller_create_server(sfIpAddress serverIp, unsigned short serverPort, u
     sfPacket_writeInt32(packet, CREATE_SERVER + 1);
     sfPacket_writeInt32(packet, newPort);
     sfPacket_writeInt32(packet, numberOfPlayers);
+    sfPacket_writeInt32(packet, (int)mapType + 1);
 
     if (sfUdpSocket_sendPacket(socket, packet, serverIp, serverPort) != sfSocketDone) {
         fprintf(stderr, "Cannot send packet\n");

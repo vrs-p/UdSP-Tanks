@@ -18,6 +18,7 @@ add_executable(server_side main.c
         server_controller/server_controller.c
         server_controller/server_controller.h
         ../common/base/server_message_types.h
+        ../common/base/type_of_maps.h
 )
 
 target_link_libraries(server_side csfml-system csfml-network)

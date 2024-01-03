@@ -14,9 +14,9 @@ static bool controller_bind_port(SERVER_CONTROLLER* controller, const unsigned s
     return true;
 }
 
-static bool controller_create_server(SERVER_CONTROLLER* controller, const unsigned short port, int numberOfPlayers) {
+static bool controller_create_server(SERVER_CONTROLLER* controller, const unsigned short port, int numberOfPlayers, TYPE_OF_MAPS mapType) {
     APPLICATION* app = malloc(sizeof(APPLICATION));
-    app_create(app, numberOfPlayers);
+    app_create(app, numberOfPlayers, mapType);
     if (!app_initialize_socket(app, port)) {
         fprintf(stderr, "Cannot bind port: %d\n", port);
         app_destroy(app);
@@ -86,7 +86,7 @@ void controller_start(SERVER_CONTROLLER *controller) {
     sfPacket* packetSend = sfPacket_create();
     sfIpAddress ipAddress;
     unsigned short port;
-    int controller_message, requested_port, numberOfPlayers;
+    int controller_message, requested_port, numberOfPlayers, mapType;
 
     bool run = true;
     while (run) {
@@ -101,7 +101,8 @@ void controller_start(SERVER_CONTROLLER *controller) {
         if (controller_message == CREATE_SERVER) {
             requested_port = sfPacket_readInt32(packetReceive);
             numberOfPlayers = sfPacket_readInt32(packetReceive);
-            if (controller_create_server(controller, requested_port, numberOfPlayers)) {
+            mapType = sfPacket_readInt32(packetReceive);
+            if (controller_create_server(controller, requested_port, numberOfPlayers, mapType - 1)) {
                 controller_send_client_response(controller->socket, packetSend, ipAddress, port, SERVER_CREATED);
             } else {
                 controller_send_client_response(controller->socket, packetSend, ipAddress, port, PORT_OCCUPIED);

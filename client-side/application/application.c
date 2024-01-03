@@ -7,7 +7,7 @@
 void app_create(APPLICATION* app) {
     app->socket = sfUdpSocket_create();
     app->map = malloc(sizeof(MAP));
-    map_create(app->map);
+//    map_create_random(app->map, 555);
 
     app->packetSend = sfPacket_create();
     app->id = 0;
@@ -55,17 +55,23 @@ LINKED_LIST* app_get_other_tanks(APPLICATION* app) {
     return app->otherTanks;
 }
 
-void app_connect_to_server(APPLICATION* app) {
+void sendConnectRequest(APPLICATION* app) {
     sfPacket_clear(app->packetSend);
     sfPacket_writeString(app->packetSend, tank_get_player_name(app->clientTank));
+
     if (sfUdpSocket_sendPacket(app->socket, app->packetSend, app->ipAddress, app->port) != sfSocketDone) {
         fprintf(stderr, "Sending failed.");
     }
+}
+
+void app_connect_to_server(APPLICATION* app) {
+    sendConnectRequest(app);
 
     sfIpAddress ipAddress = sfIpAddress_Any;
     unsigned short port;
     float tmpX, tmpY;
     int tmpDir, tmpID, numberOfPlayers;
+    int mapType = 0, seed = 0;
     sfPacket* packetReceive = sfPacket_create();
     sfPacket_clear(packetReceive);
 
@@ -75,8 +81,12 @@ void app_connect_to_server(APPLICATION* app) {
         tmpID = sfPacket_readInt32(packetReceive);
         tmpDir = sfPacket_readInt32(packetReceive);
         numberOfPlayers = sfPacket_readInt32(packetReceive);
+        mapType = sfPacket_readInt32(packetReceive);
     }
-
+    mapType--;
+    if (mapType == RANDOM) {
+        seed = sfPacket_readInt32(packetReceive);
+    }
     sfPacket_destroy(packetReceive);
 
     switch (tmpDir) {
@@ -123,7 +133,10 @@ void app_connect_to_server(APPLICATION* app) {
         default:
             break;
     }
+    // create map
+    map_create(app->map, mapType, seed);
 
+    // create player
     app->id = tmpID;
     app->numberOfPlayers = numberOfPlayers;
     sfVector2f vec = {tmpX, tmpY};

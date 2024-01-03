@@ -7,12 +7,13 @@
 
 #include <SFML/Graphics.h>
 #include "../../common/linked_list/linked_list.h"
+#include "../../common/base/type_of_maps.h"
 
 typedef struct map {
     LINKED_LIST* listOfWalls;
 } MAP;
 
-void map_create(MAP* map);
+void map_create(MAP* map, TYPE_OF_MAPS mapType, unsigned int seed);
 void map_destroy(MAP* map);
 void map_destroy_rectangle_shape(void* shape);
 

@@ -22,10 +22,11 @@ int main() {
                 menu_render(menu);
                 if (!menu_get_app_closed(menu) && menu_get_started(menu)) {
                     controller_create_server(menu_get_ip_address(menu), menu_get_port(menu), menu_get_new_port(menu),
-                                             menu_get_num_players(menu));
+                                             menu_get_num_players(menu), menu_get_id_map(menu) - 1);
                     controller_join_server(menu_get_ip_address(menu), menu_get_new_port(menu), menu_get_name(menu));
                 }
                 menu_destroy(menu);
+                free(menu);
             } else if (mmenu_get_join(mmenu)) {
                 MENU *menu = malloc(sizeof(MENU));
                 menu_create(menu, false);
@@ -34,6 +35,7 @@ int main() {
                     controller_join_server(menu_get_ip_address(menu), menu_get_port(menu), menu_get_name(menu));
                 }
                 menu_destroy(menu);
+                free(menu);
             } else if (mmenu_get_kill(mmenu)) {
                 controller_kill_server(sfIpAddress_fromString("127.0.0.1"), 13877);
             }
@@ -41,6 +43,7 @@ int main() {
     }
 
     mmenu_destroy(mmenu);
+    free(mmenu);
 
     return 0;
 }

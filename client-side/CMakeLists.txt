@@ -27,6 +27,7 @@ add_executable(client_side main.c
         ../common/linked_list/linked_list.c
         ../common/linked_list/linked_list.h
         ../common/base/server_message_types.h
+        ../common/base/type_of_maps.h
         server_controller/server_controller.c
         server_controller/server_controller.h
 )

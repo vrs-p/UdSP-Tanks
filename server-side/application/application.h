@@ -7,12 +7,14 @@
 
 #include <stdbool.h>
 #include "../../common/linked_list/linked_list.h"
+#include "../../common/base/type_of_maps.h"
 #include "../player/player.h"
 
 typedef struct application {
     bool isRunning;
     int numberOfLeftPlayers;
     int numberOfPlayers;
+    TYPE_OF_MAPS mapType;
 
     LINKED_LIST* players;
 
@@ -26,7 +28,7 @@ typedef struct application {
     sfIpAddress ipAddress;
 } APPLICATION;
 
-void app_create(APPLICATION* app, int numberOfPlayers);
+void app_create(APPLICATION* app, int numberOfPlayers, TYPE_OF_MAPS mapType);
 void* app_create_controller(void* data);
 void app_destroy(APPLICATION* app);
 void app_destroy_void(void* app);
