@@ -1,3 +1,4 @@
+#include <locale.h>
 #include "server_controller/server_controller.h"
 #include "windows/main_menu.h"
 #include "windows/menu.h"
@@ -7,6 +8,7 @@ int main() {
 //    controller_join_server(sfIpAddress_fromString("127.0.0.1"), 13878, "LogičMou1");
 //    controller_kill_server(sfIpAddress_fromString("127.0.0.1"), 13877);
 
+    setlocale(LC_ALL, "sk_SK.UTF-8");
     MMENU* mmenu = malloc(sizeof(MMENU));
     mmenu_create(mmenu);
     while (!mmenu_get_closed(mmenu) && !mmenu_get_kill(mmenu)) {

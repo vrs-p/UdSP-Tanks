@@ -8,6 +8,7 @@
 #include <stdbool.h>
 #include <string.h>
 #include <pthread.h>
+#include <wchar.h>
 #include "../base/network.h"
 #include "../base/movement.h"
 
@@ -19,7 +20,7 @@ typedef struct player {
     bool fired;
     bool killed;
     bool scoreWasSent;
-    char* playerName;
+    wchar_t* playerName;
     CONNECTION* connection;
     POSITION* position;
     POSITION* initialPosition;
@@ -27,7 +28,7 @@ typedef struct player {
     pthread_mutex_t mutex;
 } PLAYER;
 
-void player_create(PLAYER* player, int id, char* playerName, float xPosition, float yPosition, DIRECTION direction, unsigned short port, sfIpAddress ipAddress);
+void player_create(PLAYER* player, int id, wchar_t* playerName, float xPosition, float yPosition, DIRECTION direction, unsigned short port, sfIpAddress ipAddress);
 void player_destroy(PLAYER* player);
 void player_destroy_void(void* player);
 
@@ -53,7 +54,7 @@ void player_left(PLAYER* player, bool left);
 void player_increase_score(PLAYER* player);
 void player_score_sent(PLAYER* player, bool sent);
 
-char* player_name(PLAYER* player);
+wchar_t* player_name(PLAYER* player);
 
 void player_lock_mutex(PLAYER* player);
 void player_unlock_mutex(PLAYER* player);

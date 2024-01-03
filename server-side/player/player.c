@@ -6,11 +6,12 @@
 #include "player.h"
 
 
-void player_create(PLAYER *player, int id, char *playerName, float xPosition, float yPosition, DIRECTION direction,
+void player_create(PLAYER *player, int id, wchar_t *playerName, float xPosition, float yPosition, DIRECTION direction,
                    unsigned short port, sfIpAddress ipAddress) {
     player->id = id;
-    player->playerName = malloc(sizeof(char) * strlen(playerName) + 1);
-    strcpy(player->playerName, playerName);
+    player->playerName = malloc(sizeof(wchar_t) * wcslen(playerName) + 1);
+    wcscpy(player->playerName, playerName);
+//    strcpy(player->playerName, playerName);
 
     player->connection = malloc(sizeof(CONNECTION));
     player->position = malloc(sizeof(POSITION));
@@ -125,7 +126,7 @@ void player_score_sent(PLAYER *player, bool sent) {
     player->scoreWasSent = sent;
 }
 
-char *player_name(PLAYER *player) {
+wchar_t *player_name(PLAYER *player) {
     return player->playerName;
 }
 

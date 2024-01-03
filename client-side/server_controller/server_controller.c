@@ -46,7 +46,7 @@ bool controller_create_server(sfIpAddress serverIp, unsigned short serverPort, u
     }
 }
 
-bool controller_join_server(sfIpAddress serverIp, unsigned short serverPort, char *playerName) {
+bool controller_join_server(sfIpAddress serverIp, unsigned short serverPort, wchar_t* playerName) {
     APPLICATION app;
     app_create(&app);
     app_run(&app, serverIp, serverPort, playerName);

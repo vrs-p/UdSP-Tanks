@@ -11,12 +11,12 @@ void tank_create(TANK *tank) {
     tank->texture = sfTexture_createFromFile("../../common/img/tankWithoutBG.png", NULL);
     tank->sprite = sfSprite_create();
     sfSprite_setTexture(tank->sprite, tank->texture, sfTrue);
-    sfVector2f vec = {0.05, 0.05};
+    sfVector2f vec = {0.05f, 0.05f};
     sfSprite_setScale(tank->sprite, vec);
 
     tank->bullet = malloc(sizeof(BULLET));
     bullet_create(tank->bullet);
-    tank->speed = 5.0;
+    tank->speed = 5.0f;
     tank->reloadTime = 3;
     tank->direction = UP;
 
@@ -238,9 +238,11 @@ void tank_set_player_id(TANK *tank, int id) {
     tank->playerId = id;
 }
 
-void tank_set_player_name(TANK *tank, char *name) {
-    tank->playerName = malloc(sizeof(char)*strlen(name));
-    strcpy(tank->playerName, name);
+void tank_set_player_name(TANK* tank, wchar_t* name) {
+    tank->playerName = malloc(sizeof(wchar_t) * wcslen(name));
+    wcscpy(tank->playerName, name);
+//    tank->playerName = malloc(sizeof(char)*strlen(name));
+//    strcpy(tank->playerName, name);
 }
 
 void tank_set_left(TANK *tank, bool left) {
@@ -263,7 +265,7 @@ int tank_get_player_id(TANK *tank) {
     return tank->playerId;
 }
 
-char *tank_get_player_name(TANK *tank) {
+wchar_t *tank_get_player_name(TANK *tank) {
     return tank->playerName;
 }
 

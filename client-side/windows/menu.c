@@ -85,19 +85,19 @@ void menu_create(MENU* menu, bool create) {
         vec = (sfVector2f){sfText_getLocalBounds(menu->portServer).width + xSpace, SCREEN_HEIGHT / 2 - sfText_getLocalBounds(menu->portServer).height * 2.5};
         txtbox_set_position(text, vec);
         txtbox_set_limit_int(text, 5);
-        txtbox_set_initial_text(text, "13878");
+        txtbox_set_initial_text(text, L"13878");
 
         text = *(TEXTBOX**)ls_access_at_2(menu->textboxes, 4);
         vec = (sfVector2f){sfText_getLocalBounds(menu->numOfPlayers).width + xSpace, SCREEN_HEIGHT / 2 - sfText_getLocalBounds(menu->numOfPlayers).height};
         txtbox_set_position(text, vec);
         txtbox_set_limit_int(text, 1);
-        txtbox_set_initial_text(text, "1");
+        txtbox_set_initial_text(text, L"1");
 
         text = *(TEXTBOX**)ls_access_at_2(menu->textboxes, 5);
         vec = (sfVector2f){sfText_getLocalBounds(menu->idMap).width + xSpace, SCREEN_HEIGHT / 2 + sfText_getLocalBounds(menu->idMap).height * 0.5};
         txtbox_set_position(text, vec);
         txtbox_set_limit_int(text, 1);
-        txtbox_set_initial_text(text, "1");
+        txtbox_set_initial_text(text, L"1");
     } else {
         menu->textboxes = malloc(sizeof(LINKED_LIST));
         ls_create(menu->textboxes, sizeof(TEXTBOX*));
@@ -111,18 +111,19 @@ void menu_create(MENU* menu, bool create) {
     TEXTBOX* text = *(TEXTBOX**)ls_access_at_2(menu->textboxes, 0);
     vec = (sfVector2f){sfText_getLocalBounds(menu->name).width + xSpace, SCREEN_HEIGHT / 2 - sfText_getLocalBounds(menu->name).height * 9};
     txtbox_set_position(text, vec);
+    txtbox_set_initial_text(text, L"LogičMou");
     txtbox_set_selected(text, true);
 
     text = *(TEXTBOX**)ls_access_at_2(menu->textboxes, 1);
     vec = (sfVector2f){sfText_getLocalBounds(menu->ipAddressText).width + xSpace, SCREEN_HEIGHT / 2 - sfText_getLocalBounds(menu->ipAddressText).height * 7};
     txtbox_set_position(text, vec);
-    txtbox_set_initial_text(text, "127.0.0.1");
+    txtbox_set_initial_text(text, L"127.0.0.1");
 
     text = *(TEXTBOX**)ls_access_at_2(menu->textboxes, 2);
     vec = (sfVector2f){sfText_getLocalBounds(menu->portText).width + xSpace, SCREEN_HEIGHT / 2 - sfText_getLocalBounds(menu->portText).height * 4};
     txtbox_set_position(text, vec);
     txtbox_set_limit_int(text, 5);
-    txtbox_set_initial_text(text, "13877");
+    txtbox_set_initial_text(text, L"13877");
 
     menu->button = malloc(sizeof(BUTTON));
     vec = (sfVector2f){200, 50};
@@ -175,7 +176,7 @@ void menu_initialize_window(MENU* menu) {
     sfRenderWindow_setActive(menu->window, sfTrue);
 }
 
-bool menu_validate_ip(char* ip) {
+bool menu_validate_ip(wchar_t* ip) {
 //    regex_t regex;
 //    int reti;
 //
@@ -197,11 +198,23 @@ bool menu_validate_ip(char* ip) {
 //        return false;
 //    }
 
+    char str[16];
+    size_t len = wcstombs(str, ip, sizeof(str));
+    if (len == (size_t)-1) {
+        return false;
+    }
+
     struct sockaddr_in sa;
-    return inet_pton(AF_INET, ip, &(sa.sin_addr)) != 0;
+    return inet_pton(AF_INET, str, &(sa.sin_addr)) != 0;
 }
 
-bool menu_validate_port(char* port) {
+bool menu_validate_port(wchar_t* port) {
+    char str[6];
+    size_t len = wcstombs(str, port, sizeof(str));
+    if (len == (size_t)-1) {
+        return false;
+    }
+
     regex_t regex;
     int reti;
 
@@ -210,7 +223,7 @@ bool menu_validate_port(char* port) {
         return false;
     }
 
-    reti = regexec(&regex, port, 0, NULL, 0);
+    reti = regexec(&regex, str, 0, NULL, 0);
     if (!reti) {
         regfree(&regex);
         return true;
@@ -220,7 +233,13 @@ bool menu_validate_port(char* port) {
     }
 }
 
-bool menu_validate_num(char* num) {
+bool menu_validate_num(wchar_t* num) {
+    char str[2];
+    size_t len = wcstombs(str, num, sizeof(str));
+    if (len == (size_t)-1) {
+        return false;
+    }
+
     regex_t regex;
     int reti;
 
@@ -229,7 +248,7 @@ bool menu_validate_num(char* num) {
         return false;
     }
 
-    reti = regexec(&regex, num, 0, NULL, 0);
+    reti = regexec(&regex, str, 0, NULL, 0);
     if (!reti) {
         regfree(&regex);
         return true;
@@ -254,7 +273,7 @@ bool menu_validate(MENU* menu) {
         textbox4 = *(TEXTBOX**)ls_access_at_2(menu->textboxes, 4);
         textbox5 = *(TEXTBOX**)ls_access_at_2(menu->textboxes, 5);
     }
-    if (!menu->create && strlen(txtbox_get_text(textbox0)) != 0 && menu_validate_ip(txtbox_get_text(textbox1)) &&
+    if (!menu->create && wcslen(txtbox_get_text(textbox0)) != 0 && menu_validate_ip(txtbox_get_text(textbox1)) &&
         menu_validate_port(txtbox_get_text(textbox2))) {
         if (btn_is_mouse_over(menu->button, menu->window)) {
             btn_set_bg_color(menu->button, sfColor_fromRGB(0, 153, 0));
@@ -264,7 +283,7 @@ bool menu_validate(MENU* menu) {
             btn_set_text_color(menu->button, sfBlack);
         }
         return true;
-    } else if (menu->create && strlen(txtbox_get_text(textbox0)) != 0 && menu_validate_ip(txtbox_get_text(textbox1)) &&
+    } else if (menu->create && wcslen(txtbox_get_text(textbox0)) != 0 && menu_validate_ip(txtbox_get_text(textbox1)) &&
         menu_validate_port(txtbox_get_text(textbox2)) && menu_validate_port(txtbox_get_text(textbox3)) &&
         menu_validate_num(txtbox_get_text(textbox4)) && menu_validate_num(txtbox_get_text(textbox5))) {
         if (btn_is_mouse_over(menu->button, menu->window)) {
@@ -373,32 +392,49 @@ bool menu_get_started(MENU* menu) {
 
 sfIpAddress menu_get_ip_address(MENU* menu) {
     TEXTBOX* textbox = *(TEXTBOX**)ls_access_at_2(menu->textboxes, 1);
-    return sfIpAddress_fromString(txtbox_get_text(textbox));
+    char str[16];
+    size_t len = wcstombs(str, txtbox_get_text(textbox), sizeof(str));
+    if (len == (size_t)-1) {
+        return sfIpAddress_None;
+    }
+    return sfIpAddress_fromString(str);
 }
 
 int menu_get_port(MENU* menu) {
     TEXTBOX* textbox = *(TEXTBOX**)ls_access_at_2(menu->textboxes, 2);
-    return atoi(txtbox_get_text(textbox));
+    char* endptr;
+    long int num = wcstol(txtbox_get_text(textbox), &endptr, 10);
+    return num;
+//    return atoi(txtbox_get_text(textbox));
 }
 
 int menu_get_new_port(MENU* menu) {
     TEXTBOX* textbox = *(TEXTBOX**)ls_access_at_2(menu->textboxes, 3);
-    return atoi(txtbox_get_text(textbox));
+    char* endptr;
+    long int num = wcstol(txtbox_get_text(textbox), &endptr, 10);
+    return num;
+//    return atoi(txtbox_get_text(textbox));
 }
 
-char* menu_get_name(MENU* menu) {
+wchar_t* menu_get_name(MENU* menu) {
     TEXTBOX* textbox = *(TEXTBOX**)ls_access_at_2(menu->textboxes, 0);
     return txtbox_get_text(textbox);
 }
 
 int menu_get_num_players(MENU* menu) {
     TEXTBOX* textbox = *(TEXTBOX**)ls_access_at_2(menu->textboxes, 4);
-    return atoi(txtbox_get_text(textbox));
+    char* endptr;
+    long int num = wcstol(txtbox_get_text(textbox), &endptr, 10);
+    return num;
+//    return atoi(txtbox_get_text(textbox));
 }
 
 int menu_get_id_map(MENU* menu) {
     TEXTBOX* textbox = *(TEXTBOX**)ls_access_at_2(menu->textboxes, 5);
-    return atoi(txtbox_get_text(textbox));
+    char* endptr;
+    long int num = wcstol(txtbox_get_text(textbox), &endptr, 10);
+    return num;
+//    return atoi(txtbox_get_text(textbox));
 }
 
 #undef SCREEN_WIDTH
