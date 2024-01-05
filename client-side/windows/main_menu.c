@@ -64,7 +64,7 @@ void mmenu_destroy(MMENU* mmenu) {
     mmenu->window = NULL;
 }
 
-void mmenu_initialize_window(MMENU* mmenu) {
+static void mmenu_initialize_window(MMENU* mmenu) {
     sfVideoMode mode = {SCREEN_WIDTH, SCREEN_HEIGHT};
     mmenu->window = sfRenderWindow_create(mode, "UdSP-Tanks", sfClose, NULL);
     sfRenderWindow_setFramerateLimit(mmenu->window, 60);
@@ -75,7 +75,10 @@ void mmenu_initialize_window(MMENU* mmenu) {
 //    sfRenderWindow_setPosition(mmenu->window, vec);
 }
 
-void mmenu_validate(MMENU* mmenu) {
+#undef SCREEN_WIDTH
+#undef SCREEN_HEIGHT
+
+static void mmenu_validate(MMENU* mmenu) {
     if (btn_is_mouse_over(mmenu->btnCrtServer, mmenu->window)) {
         btn_set_bg_color(mmenu->btnCrtServer, sfColor_fromRGB(0, 153, 0));
         btn_set_text_color(mmenu->btnCrtServer, sfWhite);
@@ -161,6 +164,3 @@ void mmenu_set_create(MMENU* mmenu, bool state) {
 void mmenu_set_join(MMENU* mmenu, bool state) {
     mmenu->join = state;
 }
-
-#undef SCREEN_WIDTH
-#undef SCREEN_HEIGHT

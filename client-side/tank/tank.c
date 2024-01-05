@@ -2,7 +2,6 @@
 // Created by vrsp on 28.12.2023.
 //
 
-#include <string.h>
 #include "tank.h"
 
 void tank_create(TANK *tank) {
@@ -241,8 +240,6 @@ void tank_set_player_id(TANK *tank, int id) {
 void tank_set_player_name(TANK* tank, wchar_t* name) {
     tank->playerName = malloc(sizeof(wchar_t) * wcslen(name));
     wcscpy(tank->playerName, name);
-//    tank->playerName = malloc(sizeof(char)*strlen(name));
-//    strcpy(tank->playerName, name);
 }
 
 void tank_set_left(TANK *tank, bool left) {

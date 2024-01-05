@@ -10,24 +10,18 @@ void txtbox_create(TEXTBOX* txtbox, int limit, int size, sfColor color, sfFont* 
     sfText_setCharacterSize(txtbox->textBox, size);
     sfText_setFillColor(txtbox->textBox, color);
     sfText_setUnicodeString(txtbox->textBox, L"");
-//    sfText_setString(txtbox->textBox, "");
     txtbox->isSelected = isSelected;
 
     txtbox->text = malloc((limit + 1) * sizeof(wchar_t));
     wchar_t tmp[] = L"";
     wcscpy(txtbox->text, tmp);
-//    txtbox->text = malloc((limit + 1) * sizeof(char));
-//    char tmp[] = "";
-//    strcpy(txtbox->text, tmp);
     txtbox->hasLimit = true;
     txtbox->limit = limit;
 
     if (txtbox->isSelected) {
         sfText_setUnicodeString(txtbox->textBox, L"_");
-//        sfText_setString(txtbox->textBox, "_");
     } else {
         sfText_setUnicodeString(txtbox->textBox, L"");
-//        sfText_setString(txtbox->textBox, "");
     }
 }
 
@@ -69,24 +63,17 @@ void txtbox_set_selected(TEXTBOX* txtbox, bool isSelected) {
         wcscpy(tmpText, txtbox->text);
         wcscat(tmpText, L"_");
         sfText_setUnicodeString(txtbox->textBox, tmpText);
-//        char tmpText[txtbox->limit + 2];
-//        strcpy(tmpText, txtbox->text);
-//        strcat(tmpText, "_");
-//        sfText_setString(txtbox->textBox, tmpText);
     } else {
         sfText_setUnicodeString(txtbox->textBox, txtbox->text);
-//        sfText_setString(txtbox->textBox, txtbox->text);
     }
 }
 
 void txtbox_set_initial_text(TEXTBOX* txtbox, wchar_t* text) {
     wcscat(txtbox->text, text);
     sfText_setUnicodeString(txtbox->textBox, txtbox->text);
-//    strcat(txtbox->text, text);
-//    sfText_setString(txtbox->textBox, txtbox->text);
 }
 
-void txtbox_delete_last_character(TEXTBOX* txtbox) {
+static void txtbox_delete_last_character(TEXTBOX* txtbox) {
     size_t len = wcslen(txtbox->text);
     wchar_t tmp[len];
     if (len > 0) {
@@ -95,32 +82,16 @@ void txtbox_delete_last_character(TEXTBOX* txtbox) {
     }
     wcscpy(txtbox->text, tmp);
     sfText_setUnicodeString(txtbox->textBox, txtbox->text);
-
-//    size_t len = strlen(txtbox->text);
-//    char tmp[len];
-//    if (len > 0) {
-//        strncpy(tmp, txtbox->text, len - 1);
-//        tmp[len - 1] = '\0';
-//    }
-//
-//    strcpy(txtbox->text, tmp);
-//    sfText_setString(txtbox->textBox, txtbox->text);
 }
 
-void txtbox_input_logic(TEXTBOX* txtbox, sfEvent event) {
+static void txtbox_input_logic(TEXTBOX* txtbox, sfEvent event) {
     if (event.text.unicode != 8 && event.text.unicode != 27) {
         wchar_t str[2];
         str[0] = (wchar_t)event.text.unicode;
         str[1] = '\0';
         wcscat(txtbox->text, str);
-
-//        char str[2];
-//        str[0] = (char)event.text.unicode;
-//        str[1] = '\0';
-//        strcat(txtbox->text, str);
     } else if (event.text.unicode == 8) {
         if (wcslen(txtbox->text) > 0) {
-//        if (strlen(txtbox->text) > 0) {
             txtbox_delete_last_character(txtbox);
         }
     }
@@ -129,10 +100,6 @@ void txtbox_input_logic(TEXTBOX* txtbox, sfEvent event) {
     wcscpy(tmpText, txtbox->text);
     wcscat(tmpText, L"_");
     sfText_setUnicodeString(txtbox->textBox, tmpText);
-//    char tmpText[txtbox->limit + 2];
-//    strcpy(tmpText, txtbox->text);
-//    strcat(tmpText, "_");
-//    sfText_setString(txtbox->textBox, tmpText);
 }
 
 void txtbox_typed(TEXTBOX* txtbox, sfEvent event) {
@@ -141,10 +108,8 @@ void txtbox_typed(TEXTBOX* txtbox, sfEvent event) {
         if (charTyped == 8 || charTyped == 27 || (charTyped >= 32 && charTyped <= 122) || (charTyped >= 192 && charTyped <= 382)) {
             if (txtbox->hasLimit) {
                 if (wcslen(txtbox->text) < txtbox->limit) {
-//                if (strlen(txtbox->text) < txtbox->limit) {
                     txtbox_input_logic(txtbox, event);
                 } else if (wcslen(txtbox->text) >= txtbox->limit && charTyped == 8) {
-//                } else if (strlen(txtbox->text) >= txtbox->limit && charTyped == 8) {
                     txtbox_delete_last_character(txtbox);
                 }
             } else {

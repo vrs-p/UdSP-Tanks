@@ -18,7 +18,7 @@ void bullet_destroy(BULLET* bullet) {
     sfRectangleShape_destroy(bullet->icon);
 }
 
-void bullet_move(BULLET* bullet) {
+static void bullet_move(BULLET* bullet) {
     if (bullet->direction == UP){
         sfVector2f vec = {0.0f, -bullet->speed};
         sfRectangleShape_move(bullet->icon, vec);

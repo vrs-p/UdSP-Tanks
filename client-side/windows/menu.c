@@ -176,6 +176,9 @@ void menu_initialize_window(MENU* menu) {
     sfRenderWindow_setActive(menu->window, sfTrue);
 }
 
+#undef SCREEN_WIDTH
+#undef SCREEN_HEIGHT
+
 bool menu_validate_ip(wchar_t* ip) {
 //    regex_t regex;
 //    int reti;
@@ -405,7 +408,6 @@ int menu_get_port(MENU* menu) {
     char* endptr;
     long int num = wcstol(txtbox_get_text(textbox), &endptr, 10);
     return num;
-//    return atoi(txtbox_get_text(textbox));
 }
 
 int menu_get_new_port(MENU* menu) {
@@ -413,7 +415,6 @@ int menu_get_new_port(MENU* menu) {
     char* endptr;
     long int num = wcstol(txtbox_get_text(textbox), &endptr, 10);
     return num;
-//    return atoi(txtbox_get_text(textbox));
 }
 
 wchar_t* menu_get_name(MENU* menu) {
@@ -426,7 +427,6 @@ int menu_get_num_players(MENU* menu) {
     char* endptr;
     long int num = wcstol(txtbox_get_text(textbox), &endptr, 10);
     return num;
-//    return atoi(txtbox_get_text(textbox));
 }
 
 int menu_get_id_map(MENU* menu) {
@@ -434,8 +434,4 @@ int menu_get_id_map(MENU* menu) {
     char* endptr;
     long int num = wcstol(txtbox_get_text(textbox), &endptr, 10);
     return num;
-//    return atoi(txtbox_get_text(textbox));
 }
-
-#undef SCREEN_WIDTH
-#undef SCREEN_HEIGHT

@@ -5,6 +5,7 @@
 #ifndef CLIENT_SIDE_SERVER_CONTROLLER_H
 #define CLIENT_SIDE_SERVER_CONTROLLER_H
 
+#include <stdio.h>
 #include <stdbool.h>
 #include <SFML/Network.h>
 #include "../windows/show_score.h"

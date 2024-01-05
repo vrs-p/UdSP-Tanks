@@ -5,6 +5,7 @@
 #include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 
 #ifndef SERVER_SIDE_LINKED_LIST_H
 #define SERVER_SIDE_LINKED_LIST_H

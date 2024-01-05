@@ -7,6 +7,7 @@
 
 #include <SFML/Graphics.h>
 #include <pthread.h>
+#include <string.h>
 #include <wchar.h>
 #include "../bullet/bullet.h"
 

@@ -2,7 +2,6 @@
 // Created by mikulec on 12/31/23.
 //
 
-#include <stdio.h>
 #include "server_controller.h"
 
 bool controller_create_server(sfIpAddress serverIp, unsigned short serverPort, unsigned short newPort, int numberOfPlayers, TYPE_OF_MAPS mapType) {
@@ -56,6 +55,7 @@ bool controller_join_server(sfIpAddress serverIp, unsigned short serverPort, wch
     score_render(&shwScore);
     score_destroy(&shwScore);
     app_destroy(&app);
+
     return true;
 }
 

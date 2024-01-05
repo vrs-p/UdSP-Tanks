@@ -53,17 +53,16 @@ LINKED_LIST* app_get_other_tanks(APPLICATION* app) {
     return app->otherTanks;
 }
 
-void sendConnectRequest(APPLICATION* app) {
+static void sendConnectRequest(APPLICATION* app) {
     sfPacket_clear(app->packetSend);
     sfPacket_writeWideString(app->packetSend, tank_get_player_name(app->clientTank));
-//    sfPacket_writeString(app->packetSend, tank_get_player_name(app->clientTank));
 
     if (sfUdpSocket_sendPacket(app->socket, app->packetSend, app->ipAddress, app->port) != sfSocketDone) {
         fprintf(stderr, "Sending failed.");
     }
 }
 
-void app_connect_to_server(APPLICATION* app) {
+static void app_connect_to_server(APPLICATION* app) {
     sendConnectRequest(app);
 
     sfIpAddress ipAddress = sfIpAddress_Any;
@@ -82,6 +81,7 @@ void app_connect_to_server(APPLICATION* app) {
         numberOfPlayers = sfPacket_readInt32(packetReceive);
         mapType = sfPacket_readInt32(packetReceive);
     }
+
     mapType--;
     if (mapType == RANDOM) {
         seed = sfPacket_readInt32(packetReceive);
@@ -147,13 +147,12 @@ void app_connect_to_server(APPLICATION* app) {
     printf("X: %.2f Y: %.2f ID: %d\n", tmpX, tmpY, tmpID);
 }
 
-void app_wait_for_game_settings(APPLICATION* app) {
+static void app_wait_for_game_settings(APPLICATION* app) {
     sfPacket* packetReceive = sfPacket_create();
     sfIpAddress ipAddress = sfIpAddress_Any;
     unsigned short port;
     int pID, dir;
     float posX, posY;
-//    char name[50];
     wchar_t name[50];
 
     sfPacket_clear(packetReceive);
@@ -162,12 +161,10 @@ void app_wait_for_game_settings(APPLICATION* app) {
 
     for (int i = 0; i < app->numberOfPlayers - 1; ++i) {
         pID = sfPacket_readInt32(packetReceive);
-//        sfPacket_readString(packetReceive, name);
         sfPacket_readWideString(packetReceive, name);
         posX = sfPacket_readFloat(packetReceive);
         posY = sfPacket_readFloat(packetReceive);
         dir = sfPacket_readInt32(packetReceive);
-
 
         TANK* tmpTank = malloc(sizeof(TANK));
         tank_create(tmpTank);
@@ -234,14 +231,14 @@ void app_wait_for_game_settings(APPLICATION* app) {
 #define SCREEN_WIDTH 800
 #define SCREEN_HEIGHT 800
 
-void app_initialize_window(APPLICATION* app) {
+static void app_initialize_window(APPLICATION* app) {
     sfVideoMode mode = {SCREEN_WIDTH, SCREEN_HEIGHT, 32};
     app->window = sfRenderWindow_create(mode, "UdSP-Tanks", sfClose, NULL);
     sfRenderWindow_setFramerateLimit(app->window, 60);
     sfRenderWindow_setActive(app->window, sfTrue);
 }
 
-void app_read_client_input(APPLICATION* app) {
+static void app_read_client_input(APPLICATION* app) {
     sfEvent event;
     while (sfRenderWindow_pollEvent(app->window, &event)) {
         if (event.type == sfEvtClosed) {
@@ -288,7 +285,7 @@ void app_read_client_input(APPLICATION* app) {
     }
 }
 
-void app_check_borders(APPLICATION* app) {
+static void app_check_borders(APPLICATION* app) {
     float posX = sfSprite_getPosition(tank_get_sprite(app->clientTank)).x;
     float posY = sfSprite_getPosition(tank_get_sprite(app->clientTank)).y;
 
@@ -353,7 +350,10 @@ void app_check_borders(APPLICATION* app) {
     }
 }
 
-void app_update_positions_of_tanks(APPLICATION* app) {
+#undef SCREEN_WIDTH
+#undef SCREEN_HEIGHT
+
+static void app_update_positions_of_tanks(APPLICATION* app) {
     sfPacket* packetReceive = sfPacket_create();
     sfPacket* packetSend = sfPacket_create();
     sfIpAddress ipAddress = sfIpAddress_Any;
@@ -380,7 +380,7 @@ void app_update_positions_of_tanks(APPLICATION* app) {
     sfPacket_destroy(packetSend);
 }
 
-void app_check_bullet_collision(APPLICATION* app) {
+static void app_check_bullet_collision(APPLICATION* app) {
     BULLET* bullet = tank_get_bullet(app->clientTank);
 
     if (bullet != NULL) {
@@ -463,13 +463,13 @@ void app_check_bullet_collision(APPLICATION* app) {
     }
 }
 
-void app_communication_with_server(APPLICATION* app) {
+static void app_communication_with_server(APPLICATION* app) {
     app_connect_to_server(app);
     app_update_positions_of_tanks(app);
     app_wait_for_game_settings(app);
 }
 
-void app_draw(APPLICATION* app) {
+static void app_draw(APPLICATION* app) {
     sfRenderWindow_clear(app->window, sfBlack);
 
     tank_render(app->clientTank, app->window, map_get_list_of_walls(app->map));
@@ -541,7 +541,7 @@ void app_draw(APPLICATION* app) {
     sfRenderWindow_display(app->window);
 }
 
-void* app_render(void* application) {
+static void* app_render(void* application) {
     APPLICATION* app = application;
     app_initialize_window(app);
 
@@ -554,19 +554,11 @@ void* app_render(void* application) {
 
     sfRenderWindow_setActive(app->window, sfFalse);
     sfRenderWindow_close(app->window);
+
     return 0;
 }
 
-
-
-#undef SCREEN_WIDTH
-#undef SCREEN_HEIGHT
-
-
-
-
-
-void* app_receive_data(void* application) {
+static void* app_receive_data(void* application) {
     APPLICATION* app = application;
     sfPacket* packetReceive = sfPacket_create();
     sfIpAddress ipAddress = sfIpAddress_Any;
@@ -686,10 +678,11 @@ void* app_receive_data(void* application) {
         usleep(20 * 1000);
     }
     sfPacket_destroy(packetReceive);
+
     return 0;
 }
 
-void* app_send_data(void* application) {
+static void* app_send_data(void* application) {
     APPLICATION* app = application;
     sfPacket* packetSend = sfPacket_create();
     float posX, posY;
@@ -741,6 +734,7 @@ void* app_send_data(void* application) {
         app->sendDataBool = false;
     }
     sfPacket_destroy(packetSend);
+
     return 0;
 }
 
@@ -748,7 +742,6 @@ void app_run(APPLICATION* app, sfIpAddress ipAddress, int port, wchar_t* playerN
     app->ipAddress = ipAddress;
     app->port = port;
     app->sendDataBool = false;
-//    sfText_setString(app->nameOfPlayer, playerName);
     sfText_setUnicodeString(app->nameOfPlayer, playerName);
     tank_set_player_name(app->clientTank, playerName);
 

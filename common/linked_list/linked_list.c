@@ -2,7 +2,6 @@
 // Created by mikulec on 12/27/23.
 //
 
-#include <string.h>
 #include "linked_list.h"
 
 void ls_create(LINKED_LIST* ls, const size_t item_size)

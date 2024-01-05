@@ -7,7 +7,7 @@
 #define SCREEN_WIDTH 800
 #define SCREEN_HEIGHT 800
 
-void score_initialize_window(SHOWSCORE* shwScore) {
+static void score_initialize_window(SHOWSCORE* shwScore) {
     sfVideoMode mode = {SCREEN_WIDTH, SCREEN_HEIGHT};
     shwScore->window = sfRenderWindow_create(mode, "UdSP-Tanks", sfClose, NULL);
     sfRenderWindow_setFramerateLimit(shwScore->window, 60);
@@ -43,7 +43,6 @@ void score_create(SHOWSCORE* shwScore, int playerScore, LINKED_LIST* otherTanks)
     char str2[11];
     sprintf(str2, "%d", playerScore);
     strcat(str, str2);
-//    strcat(str, playerScore); TODO: fix this !!
     sfText_setString(shwScore->textYourScore, str);
     vec = (sfVector2f){(SCREEN_WIDTH - sfText_getLocalBounds(shwScore->textYourScore).width) / 2, SCREEN_HEIGHT / 2};
     sfText_setPosition(shwScore->textYourScore, vec);
@@ -64,13 +63,6 @@ void score_create(SHOWSCORE* shwScore, int playerScore, LINKED_LIST* otherTanks)
         swprintf(strScore, 11, L"%d", tank_get_score(tank));
         wcscat(strOthersScore, strScore);
         wcscat(strOthersScore, L"\n");
-//        strcat(strOthersScore, "Score of player ");
-//        strcat(strOthersScore, tank_get_player_name(tank));
-//        strcat(strOthersScore, " is: ");
-//        char* strScore = "";
-//        sprintf(strScore, "%d", tank_get_score(tank));
-//        strcat(strOthersScore, strScore);
-//        strcat(strOthersScore, "\n");
     }
     ls_iterator_destroy(&iterator);
 
@@ -81,6 +73,9 @@ void score_create(SHOWSCORE* shwScore, int playerScore, LINKED_LIST* otherTanks)
 
     shwScore->showScore = true;
 }
+
+#undef SCREEN_WIDTH
+#undef SCREEN_HEIGHT
 
 void score_destroy(SHOWSCORE* shwScore) {
     sfRenderWindow_destroy(shwScore->window);
@@ -124,6 +119,3 @@ void score_render(SHOWSCORE* shwScore) {
     sfRenderWindow_setActive(shwScore->window, sfFalse);
     sfRenderWindow_close(shwScore->window);
 }
-
-#undef SCREEN_WIDTH
-#undef SCREEN_HEIGHT
