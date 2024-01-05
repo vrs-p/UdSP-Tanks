@@ -49,7 +49,7 @@ void app_create(APPLICATION* app);
 void app_destroy(APPLICATION* app);
 
 void app_run(APPLICATION* app, sfIpAddress ipAddress, int port, wchar_t* playerName);
-int get_player_score(APPLICATION* app);
+int app_get_player_score(APPLICATION* app);
 
 LINKED_LIST* app_get_other_tanks(APPLICATION* app);
 

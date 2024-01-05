@@ -17,6 +17,7 @@ void score_initialize_window(SHOWSCORE* shwScore) {
 void score_create(SHOWSCORE* shwScore, int playerScore, LINKED_LIST* otherTanks) {
     shwScore->font = sfFont_createFromFile("../font/consola.ttf");
 
+    shwScore->textGame = sfText_create();
     sfText_setFont(shwScore->textGame, shwScore->font);
     sfText_setCharacterSize(shwScore->textGame, 32);
     sfText_setFillColor(shwScore->textGame, sfWhite);
@@ -25,6 +26,7 @@ void score_create(SHOWSCORE* shwScore, int playerScore, LINKED_LIST* otherTanks)
             sfText_getLocalBounds(shwScore->textGame).height * 11};
     sfText_setPosition(shwScore->textGame, vec);
 
+    shwScore->textEndGame = sfText_create();
     sfText_setFont(shwScore->textEndGame, shwScore->font);
     sfText_setCharacterSize(shwScore->textEndGame, 24);
     sfText_setFillColor(shwScore->textEndGame, sfWhite);
@@ -33,11 +35,12 @@ void score_create(SHOWSCORE* shwScore, int playerScore, LINKED_LIST* otherTanks)
                       sfText_getLocalBounds(shwScore->textGame).height * 9};
     sfText_setPosition(shwScore->textEndGame, vec);
 
+    shwScore->textYourScore = sfText_create();
     sfText_setFont(shwScore->textYourScore, shwScore->font);
     sfText_setCharacterSize(shwScore->textYourScore, 32);
     sfText_setFillColor(shwScore->textYourScore, sfWhite);
-    char* str = "Your score is: ";
-    char* str2 = "";
+    char str[] = "Your score is: ";
+    char str2[11];
     sprintf(str2, "%d", playerScore);
     strcat(str, str2);
 //    strcat(str, playerScore); TODO: fix this !!
@@ -45,25 +48,33 @@ void score_create(SHOWSCORE* shwScore, int playerScore, LINKED_LIST* otherTanks)
     vec = (sfVector2f){(SCREEN_WIDTH - sfText_getLocalBounds(shwScore->textYourScore).width) / 2, SCREEN_HEIGHT / 2};
     sfText_setPosition(shwScore->textYourScore, vec);
 
+    shwScore->textOthersScore = sfText_create();
     sfText_setFont(shwScore->textOthersScore, shwScore->font);
     sfText_setCharacterSize(shwScore->textOthersScore, 32);
     sfText_setFillColor(shwScore->textOthersScore, sfWhite);
-    char strOthersScore[50];
-    LINKED_LIST_ITERATOR* iterator;
-    ls_iterator_init(iterator, otherTanks);
-    while (ls_iterator_has_next(iterator)) {
-        TANK* tank = ls_iterator_move_next(iterator);
-        strcat(strOthersScore, "Score of player ");
-        strcat(strOthersScore, tank_get_player_name(tank));
-        strcat(strOthersScore, " is: ");
-        char* strScore = "";
-        sprintf(strScore, "%d", tank_get_score(tank));
-        strcat(strOthersScore, strScore);
-        strcat(strOthersScore, "\n");
+    wchar_t strOthersScore[50];
+    LINKED_LIST_ITERATOR iterator;
+    ls_iterator_init(&iterator, otherTanks);
+    while (ls_iterator_has_next(&iterator)) {
+        TANK* tank = *(TANK**)ls_iterator_move_next(&iterator);
+        wcscat(strOthersScore, L"Score of player ");
+        wcscat(strOthersScore, tank_get_player_name(tank));
+        wcscat(strOthersScore, L" is: ");
+        wchar_t* strScore = malloc(11 * sizeof(wchar_t));
+        swprintf(strScore, 11, L"%d", tank_get_score(tank));
+        wcscat(strOthersScore, strScore);
+        wcscat(strOthersScore, L"\n");
+//        strcat(strOthersScore, "Score of player ");
+//        strcat(strOthersScore, tank_get_player_name(tank));
+//        strcat(strOthersScore, " is: ");
+//        char* strScore = "";
+//        sprintf(strScore, "%d", tank_get_score(tank));
+//        strcat(strOthersScore, strScore);
+//        strcat(strOthersScore, "\n");
     }
-    ls_iterator_destroy(iterator);
+    ls_iterator_destroy(&iterator);
 
-    sfText_setString(shwScore->textOthersScore, strOthersScore);
+    sfText_setUnicodeString(shwScore->textOthersScore, strOthersScore);
     vec = (sfVector2f){(SCREEN_WIDTH - sfText_getLocalBounds(shwScore->textOthersScore).width) / 2, SCREEN_HEIGHT / 2 +
             sfText_getLocalBounds(shwScore->textYourScore).height * 2};
     sfText_setPosition(shwScore->textOthersScore, vec);

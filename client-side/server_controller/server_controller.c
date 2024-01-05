@@ -51,7 +51,11 @@ bool controller_join_server(sfIpAddress serverIp, unsigned short serverPort, wch
     app_create(&app);
     app_run(&app, serverIp, serverPort, playerName);
 
-//    app_destroy(&app);
+    SHOWSCORE shwScore;
+    score_create(&shwScore, app_get_player_score(&app), app_get_other_tanks(&app));
+    score_render(&shwScore);
+    score_destroy(&shwScore);
+    app_destroy(&app);
     return true;
 }
 

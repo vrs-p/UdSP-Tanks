@@ -7,6 +7,7 @@
 
 #include <stdbool.h>
 #include <SFML/Network.h>
+#include "../windows/show_score.h"
 #include "../application/application.h"
 #include "../../common/base/server_message_types.h"
 
