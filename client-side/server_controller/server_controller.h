@@ -11,7 +11,7 @@
 #include "../../common/base/server_message_types.h"
 
 bool controller_create_server(sfIpAddress serverIp, unsigned short serverPort, unsigned short newPort, int numberOfPlayers, TYPE_OF_MAPS mapType);
-bool controller_join_server(sfIpAddress serverIp, unsigned short serverPort, char* playerName);
+bool controller_join_server(sfIpAddress serverIp, unsigned short serverPort, wchar_t* playerName);
 bool controller_kill_server(sfIpAddress serverIp, unsigned short serverPort);
 
 #endif //CLIENT_SIDE_SERVER_CONTROLLER_H

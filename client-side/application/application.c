@@ -45,8 +45,6 @@ void app_destroy(APPLICATION* app) {
     free(app->map);
 }
 
-
-
 int app_get_player_score(APPLICATION* app) {
     return tank_get_score(app->clientTank);
 }
@@ -57,7 +55,8 @@ LINKED_LIST* app_get_other_tanks(APPLICATION* app) {
 
 void sendConnectRequest(APPLICATION* app) {
     sfPacket_clear(app->packetSend);
-    sfPacket_writeString(app->packetSend, tank_get_player_name(app->clientTank));
+    sfPacket_writeWideString(app->packetSend, tank_get_player_name(app->clientTank));
+//    sfPacket_writeString(app->packetSend, tank_get_player_name(app->clientTank));
 
     if (sfUdpSocket_sendPacket(app->socket, app->packetSend, app->ipAddress, app->port) != sfSocketDone) {
         fprintf(stderr, "Sending failed.");
@@ -154,7 +153,8 @@ void app_wait_for_game_settings(APPLICATION* app) {
     unsigned short port;
     int pID, dir;
     float posX, posY;
-    char name[50];
+//    char name[50];
+    wchar_t name[50];
 
     sfPacket_clear(packetReceive);
 
@@ -162,7 +162,8 @@ void app_wait_for_game_settings(APPLICATION* app) {
 
     for (int i = 0; i < app->numberOfPlayers - 1; ++i) {
         pID = sfPacket_readInt32(packetReceive);
-        sfPacket_readString(packetReceive, name);
+//        sfPacket_readString(packetReceive, name);
+        sfPacket_readWideString(packetReceive, name);
         posX = sfPacket_readFloat(packetReceive);
         posY = sfPacket_readFloat(packetReceive);
         dir = sfPacket_readInt32(packetReceive);
@@ -743,11 +744,12 @@ void* app_send_data(void* application) {
     return 0;
 }
 
-void app_run(APPLICATION* app, sfIpAddress ipAddress, int port, char* playerName) {
+void app_run(APPLICATION* app, sfIpAddress ipAddress, int port, wchar_t* playerName) {
     app->ipAddress = ipAddress;
     app->port = port;
     app->sendDataBool = false;
-    sfText_setString(app->nameOfPlayer, playerName);
+//    sfText_setString(app->nameOfPlayer, playerName);
+    sfText_setUnicodeString(app->nameOfPlayer, playerName);
     tank_set_player_name(app->clientTank, playerName);
 
     app_communication_with_server(app);

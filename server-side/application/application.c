@@ -89,7 +89,8 @@ void* app_send_data(void *app) {
                     }
                 }
                 if (sfUdpSocket_sendPacket(appl->socket, appl->packetSend, player_get_connection(player)->ipAddress, player_get_connection(player)->port) != sfSocketDone) {
-                    printf("Status update to player: %s failed\n", player_name(player));
+//                    printf("Status update to player: %s failed\n", player_name(player));
+                    wprintf(L"Status update to player: %ls failed\\n\"", player_name(player));
                 }
             } else if (player_killed_get(player) && !player_left_get(player)) {
                 player_lock_mutex(player);
@@ -108,11 +109,13 @@ void* app_send_data(void *app) {
                 while (ls_iterator_has_next(&iteratorInfo)) {
                     PLAYER* playerKilled = *(PLAYER**)ls_iterator_move_next(&iteratorInfo);
                     if (sfUdpSocket_sendPacket(appl->socket, appl->packetSend, player_get_connection(playerKilled)->ipAddress, player_get_connection(playerKilled)->port) != sfSocketDone) {
-                        printf("Notify dead user to the user: %s failed\n", player_name(playerKilled));
+//                        printf("Notify dead user to the user: %s failed\n", player_name(playerKilled));
+                        wprintf(L"Notify dead user to the user: %ls failed\n", player_name(playerKilled));
                     }
                 }
             } else if (player_left_get(player) && !player_sent_score_get(player)) {
-                printf("Player: %s, left the game.\n", player_name(player));
+//                printf("Player: %s, left the game.\n", player_name(player));
+                wprintf(L"Player: %ls, left the game.\n", player_name(player));
                 player_lock_mutex(player);
 
                 sfPacket_writeInt32(appl->packetSend, (int)PLAYER_QUIT + 1);
@@ -123,7 +126,8 @@ void* app_send_data(void *app) {
                 while (ls_iterator_has_next(&iteratorInfo)) {
                     PLAYER* playerInfo = *(PLAYER**)ls_iterator_move_next(&iteratorInfo);
                     if (sfUdpSocket_sendPacket(appl->socket, appl->packetSend, player_get_connection(playerInfo)->ipAddress, player_get_connection(playerInfo)->port) != sfSocketDone) {
-                        printf("Notify user: %s that user left, failed.\n", player_name(playerInfo));
+//                        printf("Notify user: %s that user left, failed.\n", player_name(playerInfo));
+                        wprintf(L"Notify user: %ls that user left, failed.\n", player_name(playerInfo));
                     }
                 }
 
@@ -275,12 +279,12 @@ void app_wait_for_clients(APPLICATION *app) {
         unsigned short tmpPort;
         sfIpAddress tmpIp = sfIpAddress_None; // Initialize to None
         DIRECTION tmpDir;
-        char pName[25];
+        wchar_t pName[25];
 
         sfPacket_clear(app->packetReceive);
         if (sfUdpSocket_receivePacket(app->socket, app->packetReceive, &tmpIp, &tmpPort) == sfSocketDone) {
-            sfPacket_readString(app->packetReceive, pName);
-            printf("Client was connected. Name is: %s\n", pName);
+            sfPacket_readWideString(app->packetReceive, pName);
+            wprintf(L"Client was connected. Name is: %ls\n", pName);
         }
 
         if (count == 0) {
@@ -340,14 +344,14 @@ void app_initialize_game(APPLICATION *app) {
             PLAYER *playerInfo = *(PLAYER **) ls_iterator_move_next(&iteratorInfo);
             if (player_id_get(player) != player_id_get(playerInfo)) {
                 sfPacket_writeInt32(app->packetSend, player_id_get(playerInfo));
-                sfPacket_writeString(app->packetSend, player_name(playerInfo));
+                sfPacket_writeWideString(app->packetSend, player_name(playerInfo));
                 sfPacket_writeFloat(app->packetSend, player_get_position(playerInfo)->xPosition);
                 sfPacket_writeFloat(app->packetSend, player_get_position(playerInfo)->yPosition);
                 sfPacket_writeInt32(app->packetSend, (int)player_get_position(playerInfo)->direction);
             }
         }
         if (sfUdpSocket_sendPacket(app->socket, app->packetSend, player_get_connection(player)->ipAddress, player_get_connection(player)->port) != sfSocketDone) {
-            printf("Sending of initial info to player: %s\n", player_name(player));
+            wprintf(L"Sending of initial info to player: %ls\n", player_name(player));
         }
     }
 }

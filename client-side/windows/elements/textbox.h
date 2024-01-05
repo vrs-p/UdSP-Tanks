@@ -9,11 +9,12 @@
 #include <stdio.h>
 #include <stdbool.h>
 #include <string.h>
+#include <wchar.h>
 #include <SFML/Graphics.h>
 
 typedef struct textbox {
     sfText* textBox;
-    char* text;
+    wchar_t* text;
     bool isSelected;
     bool hasLimit;
     int limit;
@@ -28,9 +29,9 @@ void txtbox_set_position(TEXTBOX* txtbox, sfVector2f position);
 void txtbox_set_limit_bool(TEXTBOX* txtbox, bool hasLimit);
 void txtbox_set_limit_int(TEXTBOX* txtbox, int limit);
 void txtbox_set_selected(TEXTBOX* txtbox, bool isSelected);
-void txtbox_set_initial_text(TEXTBOX* txtbox, char* text);
+void txtbox_set_initial_text(TEXTBOX* txtbox, wchar_t* text);
 void txtbox_typed(TEXTBOX* txtbox, sfEvent event);
-char* txtbox_get_text(TEXTBOX* txtbox);
+wchar_t* txtbox_get_text(TEXTBOX* txtbox);
 sfText* txtbox_get_textbox(TEXTBOX* txtbox);
 bool txtbox_is_selected(TEXTBOX* txtbox);
 

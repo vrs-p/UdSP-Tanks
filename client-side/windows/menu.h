@@ -45,7 +45,7 @@ bool menu_get_started(MENU* menu);
 sfIpAddress menu_get_ip_address(MENU* menu);
 int menu_get_port(MENU* menu);
 int menu_get_new_port(MENU* menu);
-char* menu_get_name(MENU* menu);
+wchar_t* menu_get_name(MENU* menu);
 int menu_get_num_players(MENU* menu);
 int menu_get_id_map(MENU* menu);
 
