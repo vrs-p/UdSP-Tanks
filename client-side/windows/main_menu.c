@@ -26,15 +26,11 @@ void mmenu_create(MMENU* mmenu) {
     sfText_setFont(mmenu->activeGames, mmenu->font);
     sfText_setCharacterSize(mmenu->activeGames, 22);
     sfText_setFillColor(mmenu->activeGames, sfWhite);
-    sfVector2f vecActiveGames = {(SCREEN_WIDTH - sfText_getLocalBounds(mmenu->tittle).width) / 2, 450.f};
-    sfText_setPosition(mmenu->activeGames, vecActiveGames);
 
     mmenu->activePlayers = sfText_create();
     sfText_setFont(mmenu->activePlayers, mmenu->font);
     sfText_setCharacterSize(mmenu->activePlayers, 22);
     sfText_setFillColor(mmenu->activePlayers, sfWhite);
-    sfVector2f vecActivePlayers = {(SCREEN_WIDTH - sfText_getLocalBounds(mmenu->tittle).width) / 2, 500.f};
-    sfText_setPosition(mmenu->activePlayers, vecActivePlayers);
 
     mmenu->btnCrtServer = malloc(sizeof(BUTTON));
     mmenu->btnJoinServer = malloc(sizeof(BUTTON));
@@ -94,9 +90,6 @@ static void mmenu_initialize_window(MMENU* mmenu) {
 //    sfVector2i vec = {(screen.width - SCREEN_WIDTH) / 2, (screen.height - SCREEN_HEIGHT) / 2};
 //    sfRenderWindow_setPosition(mmenu->window, vec);
 }
-
-#undef SCREEN_WIDTH
-#undef SCREEN_HEIGHT
 
 static void mmenu_validate(MMENU* mmenu) {
     if (btn_is_mouse_over(mmenu->btnCrtServer, mmenu->window)) {
@@ -200,4 +193,12 @@ void mmenu_update_stats(MMENU *mmenu, int activeGames, int activePlayers) {
 
     sfText_setString(mmenu->activeGames, activeGamesStr);
     sfText_setString(mmenu->activePlayers, activePlayersStr);
+
+    sfVector2f vecActiveGames = {(SCREEN_WIDTH - sfText_getLocalBounds(mmenu->activeGames).width) / 2, 450.f};
+    sfText_setPosition(mmenu->activeGames, vecActiveGames);
+    sfVector2f vecActivePlayers = {(SCREEN_WIDTH - sfText_getLocalBounds(mmenu->activePlayers).width) / 2, 500.f};
+    sfText_setPosition(mmenu->activePlayers, vecActivePlayers);
 }
+
+#undef SCREEN_WIDTH
+#undef SCREEN_HEIGHT

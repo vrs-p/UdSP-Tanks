@@ -20,6 +20,8 @@ add_executable(client_side main.c
         windows/menu.h
         windows/show_score.c
         windows/show_score.h
+        windows/show_error.c
+        windows/show_error.h
         windows/elements/button.c
         windows/elements/button.h
         windows/elements/textbox.c

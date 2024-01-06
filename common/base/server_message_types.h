@@ -2,6 +2,9 @@
 // Created by mikulec on 12/31/23.
 //
 
+#ifndef SERVER_MESSAGE_TYPES_H
+#define SERVER_MESSAGE_TYPES_H
+
 typedef enum server_message_type {
     CREATE_SERVER,
     KILL_SERVER,
@@ -9,5 +12,8 @@ typedef enum server_message_type {
     SERVER_CREATED,
     GAMES_ARE_RUNNING,
     SERVER_IS_OFF,
-    STATISTICS
+    STATISTICS,
+    UNKNOWN
 } SERVER_MESSAGE_TYPE;
+
+#endif //SERVER_MESSAGE_TYPES_H

@@ -51,7 +51,7 @@ void score_create(SHOWSCORE* shwScore, int playerScore, LINKED_LIST* otherTanks)
     sfText_setFont(shwScore->textOthersScore, shwScore->font);
     sfText_setCharacterSize(shwScore->textOthersScore, 32);
     sfText_setFillColor(shwScore->textOthersScore, sfWhite);
-    wchar_t strOthersScore[50];
+    wchar_t strOthersScore[200] = L"";
     LINKED_LIST_ITERATOR iterator;
     ls_iterator_init(&iterator, otherTanks);
     while (ls_iterator_has_next(&iterator)) {

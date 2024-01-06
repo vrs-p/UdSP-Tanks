@@ -4,7 +4,7 @@
 
 #include "server_controller.h"
 
-bool controller_create_server(sfIpAddress serverIp, unsigned short serverPort, unsigned short newPort, int numberOfPlayers, TYPE_OF_MAPS mapType) {
+bool controller_create_server(sfIpAddress serverIp, unsigned short serverPort, unsigned short newPort, int numberOfPlayers, TYPE_OF_MAPS mapType, SERVER_MESSAGE_TYPE* error) {
     unsigned short tmpPort;
     sfUdpSocket* socket = sfUdpSocket_create();
     sfPacket* packet = sfPacket_create();
@@ -35,12 +35,15 @@ bool controller_create_server(sfIpAddress serverIp, unsigned short serverPort, u
 
     if (response == SERVER_CREATED) {
         printf("Server created.\n");
+        *error = SERVER_CREATED;
         return true;
     } else if (response == PORT_OCCUPIED) {
         printf("Selected port is occupied. Failed\n");
+        *error = PORT_OCCUPIED;
         return false;
     } else {
         printf("Unknown error.\n");
+        *error = UNKNOWN;
         return false;
     }
 }
@@ -59,7 +62,7 @@ bool controller_join_server(sfIpAddress serverIp, unsigned short serverPort, wch
     return true;
 }
 
-bool controller_kill_server(sfIpAddress serverIp, unsigned short serverPort) {
+bool controller_kill_server(sfIpAddress serverIp, unsigned short serverPort, SERVER_MESSAGE_TYPE* error) {
     unsigned short tmpPort;
     sfUdpSocket* socket = sfUdpSocket_create();
     sfPacket* packet = sfPacket_create();
@@ -87,18 +90,21 @@ bool controller_kill_server(sfIpAddress serverIp, unsigned short serverPort) {
 
     if (response == SERVER_IS_OFF) {
         printf("Server was successfully killed.\n");
+        *error = KILL_SERVER;
         return true;
     } else if (response == GAMES_ARE_RUNNING) {
         printf("Games are still running. Cannot kill server. Failed\n");
+        *error = GAMES_ARE_RUNNING;
         return false;
     } else {
         printf("Unknown error.\n");
+        *error = UNKNOWN;
         return false;
     }
 }
 
 void controller_get_server_statistics(sfIpAddress serverIp, unsigned short serverPort, int *activeGames,
-                                      int *activePlayers) {
+                                      int *activePlayers, SERVER_MESSAGE_TYPE* error) {
     unsigned short tmpPort;
     sfUdpSocket* socket = sfUdpSocket_create();
     sfPacket* packet = sfPacket_create();
@@ -115,6 +121,7 @@ void controller_get_server_statistics(sfIpAddress serverIp, unsigned short serve
     sfPacket_clear(packet);
     if (sfUdpSocket_receivePacket(socket, packet, &serverIp, &tmpPort) != sfSocketDone) {
         fprintf(stderr, "Cannot send receive\n");
+        *error = SERVER_IS_OFF; //TODO: fix this!
     }
     printf("Packet received\n");
 
@@ -123,4 +130,6 @@ void controller_get_server_statistics(sfIpAddress serverIp, unsigned short serve
 
     sfUdpSocket_destroy(socket);
     sfPacket_destroy(packet);
+
+    *error = STATISTICS;
 }
