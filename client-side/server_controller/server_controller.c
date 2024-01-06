@@ -96,3 +96,31 @@ bool controller_kill_server(sfIpAddress serverIp, unsigned short serverPort) {
         return false;
     }
 }
+
+void controller_get_server_statistics(sfIpAddress serverIp, unsigned short serverPort, int *activeGames,
+                                      int *activePlayers) {
+    unsigned short tmpPort;
+    sfUdpSocket* socket = sfUdpSocket_create();
+    sfPacket* packet = sfPacket_create();
+
+    sfPacket_clear(packet);
+
+    sfPacket_writeInt32(packet, STATISTICS + 1);
+
+    if (sfUdpSocket_sendPacket(socket, packet, serverIp, serverPort) != sfSocketDone) {
+        fprintf(stderr, "Cannot send packet\n");
+    }
+    printf("Request for server statistics was sent.\n");
+
+    sfPacket_clear(packet);
+    if (sfUdpSocket_receivePacket(socket, packet, &serverIp, &tmpPort) != sfSocketDone) {
+        fprintf(stderr, "Cannot send receive\n");
+    }
+    printf("Packet received\n");
+
+    *activeGames = sfPacket_readInt32(packet);
+    *activePlayers = sfPacket_readInt32(packet);
+
+    sfUdpSocket_destroy(socket);
+    sfPacket_destroy(packet);
+}

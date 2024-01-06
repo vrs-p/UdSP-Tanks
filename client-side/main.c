@@ -3,18 +3,22 @@
 #include "windows/main_menu.h"
 #include "windows/menu.h"
 
-int main() {
-//    controller_create_server(sfIpAddress_fromString("127.0.0.1"), 13877, 13878, 1);
-//    controller_join_server(sfIpAddress_fromString("127.0.0.1"), 13878, "LogičMou1");
-//    controller_kill_server(sfIpAddress_fromString("127.0.0.1"), 13877);
+#define SERVER_IP "127.0.0.1"
+#define SERVER_PORT 13877
 
+int main() {
     setlocale(LC_ALL, "sk_SK.UTF-8");
+
+    int activeGames, activePlayers;
+
     MMENU* mmenu = malloc(sizeof(MMENU));
     mmenu_create(mmenu);
     while (!mmenu_get_closed(mmenu) && !mmenu_get_kill(mmenu)) {
         mmenu_set_closed(mmenu, false);
         mmenu_set_create(mmenu, false);
         mmenu_set_join(mmenu, false);
+        controller_get_server_statistics(sfIpAddress_fromString(SERVER_IP), SERVER_PORT, &activeGames, &activePlayers);
+        mmenu_update_stats(mmenu, activeGames, activePlayers);
         mmenu_render(mmenu);
 
         if (!mmenu_get_closed(mmenu)) {

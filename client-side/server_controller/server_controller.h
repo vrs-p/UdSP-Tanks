@@ -15,5 +15,6 @@
 bool controller_create_server(sfIpAddress serverIp, unsigned short serverPort, unsigned short newPort, int numberOfPlayers, TYPE_OF_MAPS mapType);
 bool controller_join_server(sfIpAddress serverIp, unsigned short serverPort, wchar_t* playerName);
 bool controller_kill_server(sfIpAddress serverIp, unsigned short serverPort);
+void controller_get_server_statistics(sfIpAddress serverIp, unsigned short serverPort, int* activeGames, int* activePlayers);
 
 #endif //CLIENT_SIDE_SERVER_CONTROLLER_H

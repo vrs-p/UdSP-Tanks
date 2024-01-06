@@ -5,7 +5,7 @@
 #include "main_menu.h"
 
 #define SCREEN_WIDTH 800
-#define SCREEN_HEIGHT 400
+#define SCREEN_HEIGHT 600
 
 void mmenu_create(MMENU* mmenu) {
     mmenu->create = false;
@@ -21,6 +21,20 @@ void mmenu_create(MMENU* mmenu) {
     sfText_setString(mmenu->tittle, "UdSP-Tanks");
     sfVector2f vec = {(SCREEN_WIDTH - sfText_getLocalBounds(mmenu->tittle).width) / 2, 100.f};
     sfText_setPosition(mmenu->tittle, vec);
+
+    mmenu->activeGames = sfText_create();
+    sfText_setFont(mmenu->activeGames, mmenu->font);
+    sfText_setCharacterSize(mmenu->activeGames, 22);
+    sfText_setFillColor(mmenu->activeGames, sfWhite);
+    sfVector2f vecActiveGames = {(SCREEN_WIDTH - sfText_getLocalBounds(mmenu->tittle).width) / 2, 450.f};
+    sfText_setPosition(mmenu->activeGames, vecActiveGames);
+
+    mmenu->activePlayers = sfText_create();
+    sfText_setFont(mmenu->activePlayers, mmenu->font);
+    sfText_setCharacterSize(mmenu->activePlayers, 22);
+    sfText_setFillColor(mmenu->activePlayers, sfWhite);
+    sfVector2f vecActivePlayers = {(SCREEN_WIDTH - sfText_getLocalBounds(mmenu->tittle).width) / 2, 500.f};
+    sfText_setPosition(mmenu->activePlayers, vecActivePlayers);
 
     mmenu->btnCrtServer = malloc(sizeof(BUTTON));
     mmenu->btnJoinServer = malloc(sizeof(BUTTON));
@@ -56,6 +70,12 @@ void mmenu_destroy(MMENU* mmenu) {
 
     sfText_destroy(mmenu->tittle);
     mmenu->tittle = NULL;
+
+    sfText_destroy(mmenu->activeGames);
+    mmenu->activeGames = NULL;
+
+    sfText_destroy(mmenu->activePlayers);
+    mmenu->activePlayers = NULL;
 
     sfFont_destroy(mmenu->font);
     mmenu->font = NULL;
@@ -106,6 +126,8 @@ void mmenu_render(MMENU* mmenu) {
 
         mmenu_validate(mmenu);
         sfRenderWindow_drawText(mmenu->window, mmenu->tittle, NULL);
+        sfRenderWindow_drawText(mmenu->window, mmenu->activeGames, NULL);
+        sfRenderWindow_drawText(mmenu->window, mmenu->activePlayers, NULL);
         sfRenderWindow_drawRectangleShape(mmenu->window, btn_get(mmenu->btnCrtServer), NULL);
         sfRenderWindow_drawText(mmenu->window, btn_get_text(mmenu->btnCrtServer), NULL);
         sfRenderWindow_drawRectangleShape(mmenu->window, btn_get(mmenu->btnJoinServer), NULL);
@@ -163,4 +185,19 @@ void mmenu_set_create(MMENU* mmenu, bool state) {
 
 void mmenu_set_join(MMENU* mmenu, bool state) {
     mmenu->join = state;
+}
+
+void mmenu_update_stats(MMENU *mmenu, int activeGames, int activePlayers) {
+    char activeGamesStr[20] = "Active games: ";
+    char activePlayersStr[20] = "Active players: ";
+    char numberActiveGames[4];
+    char numberActivePlayers[4];
+
+    sprintf(numberActiveGames, "%d", activeGames);
+    sprintf(numberActivePlayers, "%d", activePlayers);
+    strcat(activeGamesStr, numberActiveGames);
+    strcat(activePlayersStr, numberActivePlayers);
+
+    sfText_setString(mmenu->activeGames, activeGamesStr);
+    sfText_setString(mmenu->activePlayers, activePlayersStr);
 }

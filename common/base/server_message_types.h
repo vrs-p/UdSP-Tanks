@@ -8,5 +8,6 @@ typedef enum server_message_type {
     PORT_OCCUPIED,
     SERVER_CREATED,
     GAMES_ARE_RUNNING,
-    SERVER_IS_OFF
+    SERVER_IS_OFF,
+    STATISTICS
 } SERVER_MESSAGE_TYPE;

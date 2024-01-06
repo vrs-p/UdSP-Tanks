@@ -60,6 +60,22 @@ static bool controller_verify_if_games_are_running(SERVER_CONTROLLER* controller
     return gameIsOn;
 }
 
+static void controller_get_statistics(SERVER_CONTROLLER* controller, int* activeGames, int* activePlayers) {
+    int games = 0;
+    int players = 0;
+    LINKED_LIST_ITERATOR iterator;
+    ls_iterator_init(&iterator, controller->servers);
+    while (ls_iterator_has_next(&iterator)) {
+        APPLICATION* application = *(APPLICATION**) ls_iterator_move_next(&iterator);
+        if (application->isRunning) {
+            games++;
+            players += application->numberOfPlayers - application->numberOfLeftPlayers;
+        }
+    }
+    *activeGames = games;
+    *activePlayers = players;
+}
+
 void controller_create(SERVER_CONTROLLER *controller) {
     controller->numberOfRunningGames = 0;
     controller->socket = sfUdpSocket_create();
@@ -86,7 +102,7 @@ void controller_start(SERVER_CONTROLLER *controller) {
     sfPacket* packetSend = sfPacket_create();
     sfIpAddress ipAddress;
     unsigned short port;
-    int controller_message, requested_port, numberOfPlayers, mapType;
+    int controller_message, requested_port, numberOfPlayers, mapType, activeGames, activePlayers;
 
     bool run = true;
     while (run) {
@@ -107,6 +123,12 @@ void controller_start(SERVER_CONTROLLER *controller) {
             } else {
                 controller_send_client_response(controller->socket, packetSend, ipAddress, port, PORT_OCCUPIED);
             }
+        } else if (controller_message == STATISTICS) {
+            controller_get_statistics(controller, &activeGames, &activePlayers);
+            sfPacket_clear(packetSend);
+            sfPacket_writeInt32(packetSend, activeGames);
+            sfPacket_writeInt32(packetSend, activePlayers);
+            sfUdpSocket_sendPacket(controller->socket, packetSend, ipAddress, port);
         } else {
             if (controller_verify_if_games_are_running(controller)) {
                 controller_send_client_response(controller->socket, packetSend, ipAddress, port, GAMES_ARE_RUNNING);

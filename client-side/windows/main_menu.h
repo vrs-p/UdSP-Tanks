@@ -6,6 +6,8 @@
 #define CLIENT_SIDE_MAIN_MENU_H
 
 #include <stdlib.h>
+#include <stdio.h>
+#include <string.h>
 #include <SFML/Graphics.h>
 #include "elements/button.h"
 
@@ -14,6 +16,8 @@ typedef struct mmenu {
 
     sfFont* font;
     sfText* tittle;
+    sfText* activeGames;
+    sfText* activePlayers;
 
     BUTTON* btnCrtServer;
     BUTTON* btnJoinServer;
@@ -36,5 +40,6 @@ bool mmenu_get_kill(MMENU* mmenu);
 void mmenu_set_closed(MMENU* mmenu, bool state);
 void mmenu_set_create(MMENU* mmenu, bool state);
 void mmenu_set_join(MMENU* mmenu, bool state);
+void mmenu_update_stats(MMENU* mmenu, int activeGames, int activePlayers);
 
 #endif //CLIENT_SIDE_MAIN_MENU_H
