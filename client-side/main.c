@@ -1,8 +1,8 @@
 #include <locale.h>
 #include "server_controller/server_controller.h"
-#include "windows/show_status.h"
-#include "windows/main_menu.h"
-#include "windows/menu.h"
+#include "windows/show_status/show_status.h"
+#include "windows/main_menu/main_menu.h"
+#include "windows/menu/menu.h"
 
 #define SERVER_IP "127.0.0.1"
 #define SERVER_PORT 13877

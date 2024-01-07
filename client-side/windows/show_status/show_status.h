@@ -7,8 +7,8 @@
 
 #include <stdlib.h>
 #include <SFML/Graphics.h>
-#include "elements/button.h"
-#include "../../common/base/server_message_types.h"
+#include "../elements/button.h"
+#include "../../../common/base/server_message_types.h"
 
 typedef struct showError {
     bool showError;

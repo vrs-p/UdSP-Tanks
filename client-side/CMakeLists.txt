@@ -14,14 +14,14 @@ add_executable(client_side main.c
         map/map.h
         tank/tank.c
         tank/tank.h
-        windows/main_menu.c
-        windows/main_menu.h
-        windows/menu.c
-        windows/menu.h
-        windows/show_score.c
-        windows/show_score.h
-        windows/show_status.c
-        windows/show_status.h
+        windows/main_menu/main_menu.c
+        windows/main_menu/main_menu.h
+        windows/menu/menu.c
+        windows/menu/menu.h
+        windows/show_score/show_score.c
+        windows/show_score/show_score.h
+        windows/show_status/show_status.c
+        windows/show_status/show_status.h
         windows/elements/button.c
         windows/elements/button.h
         windows/elements/textbox.c

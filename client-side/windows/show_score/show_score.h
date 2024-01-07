@@ -7,8 +7,8 @@
 
 #include <string.h>
 #include <SFML/Graphics.h>
-#include "../tank/tank.h"
-#include "../../common/linked_list/linked_list.h"
+#include "../../tank/tank.h"
+#include "../../../common/linked_list/linked_list.h"
 
 typedef struct showscore {
     bool showScore;

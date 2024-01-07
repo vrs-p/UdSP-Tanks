@@ -9,7 +9,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <SFML/Graphics.h>
-#include "elements/button.h"
+#include "../elements/button.h"
 
 typedef struct mmenu {
     sfRenderWindow* window;
