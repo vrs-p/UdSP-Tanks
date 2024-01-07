@@ -1,6 +1,6 @@
 #include <locale.h>
 #include "server_controller/server_controller.h"
-#include "windows/show_error.h"
+#include "windows/show_status.h"
 #include "windows/main_menu.h"
 #include "windows/menu.h"
 
@@ -18,14 +18,12 @@ int main() {
         mmenu_set_closed(mmenu, false);
         mmenu_set_create(mmenu, false);
         mmenu_set_join(mmenu, false);
-        SERVER_MESSAGE_TYPE error = UNKNOWN;
-        controller_get_server_statistics(sfIpAddress_fromString(SERVER_IP), SERVER_PORT, &activeGames, &activePlayers, &error);
-        SHOWERROR* shwErr = malloc(sizeof(SHOWERROR));
-        if (error != STATISTICS) {
-            error_create(shwErr, &error);
-            error_render(shwErr);
-            error_destroy(shwErr);
-        }
+
+        SERVER_MESSAGE_TYPE status = UNKNOWN;
+        controller_get_server_statistics(sfIpAddress_fromString(SERVER_IP), SERVER_PORT, &activeGames, &activePlayers, &status);
+        STATUS_MODAL* statusModal = malloc(sizeof(STATUS_MODAL));
+
+        mmenu_set_controller_status(mmenu, status != SUCCESS);
         mmenu_update_stats(mmenu, activeGames, activePlayers);
         mmenu_render(mmenu);
 
@@ -36,21 +34,15 @@ int main() {
                 menu_render(menu);
                 if (!menu_get_app_closed(menu) && menu_get_started(menu)) {
                     controller_create_server(menu_get_ip_address(menu), menu_get_port(menu), menu_get_new_port(menu),
-                                             menu_get_num_players(menu), menu_get_id_map(menu) - 1, &error);
-                    if (error == PORT_OCCUPIED) {
-                        error_create(shwErr, &error);
-                        error_render(shwErr);
-                        error_destroy(shwErr);
-                    } else if (error == UNKNOWN) {
-                        error_create(shwErr, &error);
-                        error_render(shwErr);
-                        error_destroy(shwErr);
+                                             menu_get_num_players(menu), menu_get_id_map(menu) - 1, &status);
+                    status_create(statusModal, &status);
+                    status_render(statusModal);
+                    status_destroy(statusModal);
+                    if (status == PORT_OCCUPIED || status == UNKNOWN) {
+                        mmenu_set_closed(mmenu, true);
                     } else {
-                        error_create(shwErr, &error);
-                        error_render(shwErr);
-                        error_destroy(shwErr);
+                        controller_join_server(menu_get_ip_address(menu), menu_get_new_port(menu), menu_get_name(menu));
                     }
-                    controller_join_server(menu_get_ip_address(menu), menu_get_new_port(menu), menu_get_name(menu));
                 }
                 menu_destroy(menu);
                 free(menu);
@@ -64,21 +56,15 @@ int main() {
                 menu_destroy(menu);
                 free(menu);
             } else if (mmenu_get_kill(mmenu)) {
-                controller_kill_server(sfIpAddress_fromString(SERVER_IP), SERVER_PORT, &error);
-                if (error == GAMES_ARE_RUNNING) {
-                    error_create(shwErr, &error);
-                    error_render(shwErr);
-                    error_destroy(shwErr);
-                } else if (error == UNKNOWN) {
-                    error_create(shwErr, &error);
-                    error_render(shwErr);
-                    error_destroy(shwErr);
-                } else {
-                    error_create(shwErr, &error);
-                    error_render(shwErr);
-                    error_destroy(shwErr);
-                }
+                controller_kill_server(sfIpAddress_fromString(SERVER_IP), SERVER_PORT, &status);
+                status_create(statusModal, &status);
+                status_render(statusModal);
+                status_destroy(statusModal);
             }
+        }
+        if (statusModal != NULL) {
+            free(statusModal);
+            statusModal = NULL;
         }
     }
 

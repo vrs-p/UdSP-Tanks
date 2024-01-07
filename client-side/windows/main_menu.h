@@ -18,6 +18,7 @@ typedef struct mmenu {
     sfText* tittle;
     sfText* activeGames;
     sfText* activePlayers;
+    sfText* controllerStatus;
 
     BUTTON* btnCrtServer;
     BUTTON* btnJoinServer;
@@ -27,6 +28,7 @@ typedef struct mmenu {
     bool join;
     bool kill;
     bool appClosed;
+    bool serverIsOff;
 } MMENU;
 
 void mmenu_create(MMENU* mmenu);
@@ -41,5 +43,6 @@ void mmenu_set_closed(MMENU* mmenu, bool state);
 void mmenu_set_create(MMENU* mmenu, bool state);
 void mmenu_set_join(MMENU* mmenu, bool state);
 void mmenu_update_stats(MMENU* mmenu, int activeGames, int activePlayers);
+void mmenu_set_controller_status(MMENU* mmenu, bool isOff);
 
 #endif //CLIENT_SIDE_MAIN_MENU_H

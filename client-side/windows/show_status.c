@@ -2,12 +2,12 @@
 // Created by vrsp on 6.1.2024.
 //
 
-#include "show_error.h"
+#include "show_status.h"
 
 #define SCREEN_WIDTH 800
-#define SCREEN_HEIGHT 200
+#define SCREEN_HEIGHT 250
 
-void error_create(SHOWERROR* shwErr, SERVER_MESSAGE_TYPE* error) {
+void status_create(STATUS_MODAL* shwErr, SERVER_MESSAGE_TYPE* error) {
     shwErr->font = sfFont_createFromFile("../font/consola.ttf");
 
     shwErr->errorText = sfText_create();
@@ -53,7 +53,7 @@ void error_create(SHOWERROR* shwErr, SERVER_MESSAGE_TYPE* error) {
     btn_set_position(shwErr->button, vec);
 }
 
-void error_destroy(SHOWERROR* shwError) {
+void status_destroy(STATUS_MODAL* shwError) {
     btn_destroy(shwError->button);
     shwError->button = NULL;
 
@@ -67,7 +67,7 @@ void error_destroy(SHOWERROR* shwError) {
     shwError->window = NULL;
 }
 
-static void error_initialize_window(SHOWERROR* shwErr) {
+static void error_initialize_window(STATUS_MODAL* shwErr) {
     sfVideoMode mode = {SCREEN_WIDTH, SCREEN_HEIGHT};
     shwErr->window = sfRenderWindow_create(mode, "UdSP-Tanks", sfClose, NULL);
     sfRenderWindow_setFramerateLimit(shwErr->window, 60);
@@ -76,7 +76,7 @@ static void error_initialize_window(SHOWERROR* shwErr) {
     sfRenderWindow_setPosition(shwErr->window, vec);
 }
 
-static void error_validate(SHOWERROR* shwError) {
+static void error_validate(STATUS_MODAL* shwError) {
     if (btn_is_mouse_over(shwError->button, shwError->window)) {
         btn_set_bg_color(shwError->button, sfColor_fromRGB(153, 153, 0));
         btn_set_text_color(shwError->button, sfWhite);
@@ -86,7 +86,7 @@ static void error_validate(SHOWERROR* shwError) {
     }
 }
 
-void error_render(SHOWERROR* shwError) {
+void status_render(STATUS_MODAL* shwError) {
     error_initialize_window(shwError);
 
     while (!shwError->showError) {

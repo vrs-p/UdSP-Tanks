@@ -12,6 +12,7 @@ void mmenu_create(MMENU* mmenu) {
     mmenu->join = false;
     mmenu->kill = false;
     mmenu->appClosed = false;
+    mmenu->serverIsOff = false;
     mmenu->font = sfFont_createFromFile("../font/consola.ttf");
 
     mmenu->tittle = sfText_create();
@@ -31,6 +32,11 @@ void mmenu_create(MMENU* mmenu) {
     sfText_setFont(mmenu->activePlayers, mmenu->font);
     sfText_setCharacterSize(mmenu->activePlayers, 22);
     sfText_setFillColor(mmenu->activePlayers, sfWhite);
+
+    mmenu->controllerStatus = sfText_create();
+    sfText_setFont(mmenu->controllerStatus, mmenu->font);
+    sfText_setCharacterSize(mmenu->controllerStatus, 22);
+    sfText_setFillColor(mmenu->controllerStatus, sfRed);
 
     mmenu->btnCrtServer = malloc(sizeof(BUTTON));
     mmenu->btnJoinServer = malloc(sizeof(BUTTON));
@@ -72,6 +78,9 @@ void mmenu_destroy(MMENU* mmenu) {
 
     sfText_destroy(mmenu->activePlayers);
     mmenu->activePlayers = NULL;
+
+    sfText_destroy(mmenu->controllerStatus);
+    mmenu->controllerStatus = NULL;
 
     sfFont_destroy(mmenu->font);
     mmenu->font = NULL;
@@ -119,8 +128,12 @@ void mmenu_render(MMENU* mmenu) {
 
         mmenu_validate(mmenu);
         sfRenderWindow_drawText(mmenu->window, mmenu->tittle, NULL);
-        sfRenderWindow_drawText(mmenu->window, mmenu->activeGames, NULL);
-        sfRenderWindow_drawText(mmenu->window, mmenu->activePlayers, NULL);
+        if (!mmenu->serverIsOff) {
+            sfRenderWindow_drawText(mmenu->window, mmenu->activeGames, NULL);
+            sfRenderWindow_drawText(mmenu->window, mmenu->activePlayers, NULL);
+        } else {
+            sfRenderWindow_drawText(mmenu->window, mmenu->controllerStatus, NULL);
+        }
         sfRenderWindow_drawRectangleShape(mmenu->window, btn_get(mmenu->btnCrtServer), NULL);
         sfRenderWindow_drawText(mmenu->window, btn_get_text(mmenu->btnCrtServer), NULL);
         sfRenderWindow_drawRectangleShape(mmenu->window, btn_get(mmenu->btnJoinServer), NULL);
@@ -193,11 +206,17 @@ void mmenu_update_stats(MMENU *mmenu, int activeGames, int activePlayers) {
 
     sfText_setString(mmenu->activeGames, activeGamesStr);
     sfText_setString(mmenu->activePlayers, activePlayersStr);
+    sfText_setString(mmenu->controllerStatus, "Server controller is off!");
 
     sfVector2f vecActiveGames = {(SCREEN_WIDTH - sfText_getLocalBounds(mmenu->activeGames).width) / 2, 450.f};
     sfText_setPosition(mmenu->activeGames, vecActiveGames);
+    sfText_setPosition(mmenu->controllerStatus, vecActiveGames);
     sfVector2f vecActivePlayers = {(SCREEN_WIDTH - sfText_getLocalBounds(mmenu->activePlayers).width) / 2, 500.f};
     sfText_setPosition(mmenu->activePlayers, vecActivePlayers);
+}
+
+void mmenu_set_controller_status(MMENU *mmenu, bool isOff) {
+    mmenu->serverIsOff = isOff;
 }
 
 #undef SCREEN_WIDTH

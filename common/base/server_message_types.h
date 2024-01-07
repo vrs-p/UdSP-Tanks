@@ -13,7 +13,8 @@ typedef enum server_message_type {
     GAMES_ARE_RUNNING,
     SERVER_IS_OFF,
     STATISTICS,
-    UNKNOWN
+    UNKNOWN,
+    SUCCESS
 } SERVER_MESSAGE_TYPE;
 
 #endif //SERVER_MESSAGE_TYPES_H
