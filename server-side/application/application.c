@@ -49,14 +49,94 @@ void app_destroy(APPLICATION *app) {
     app->socket = NULL;
 }
 
+static void app_handle_player_status(APPLICATION* appl, PLAYER* player) {
+    sfPacket_writeInt32(appl->packetSend, (int)STATUS + 1);
+
+    LINKED_LIST_ITERATOR iteratorInfo;
+    ls_iterator_init(&iteratorInfo, appl->players);
+
+    while (ls_iterator_has_next(&iteratorInfo)) {
+        PLAYER* playerInfo = *(PLAYER**)ls_iterator_move_next(&iteratorInfo);
+        if (player_id_get(playerInfo) != player_id_get(player)) {
+            player_lock_mutex(playerInfo);
+
+            sfPacket_writeInt32(appl->packetSend, player_id_get(playerInfo));
+            sfPacket_writeFloat(appl->packetSend, player_get_position(playerInfo)->xPosition);
+            sfPacket_writeFloat(appl->packetSend, player_get_position(playerInfo)->yPosition);
+            sfPacket_writeInt32(appl->packetSend, (int)player_get_position(playerInfo)->direction);
+            sfPacket_writeBool(appl->packetSend, player_fired_get(playerInfo));
+
+            player_unlock_mutex(playerInfo);
+        }
+    }
+    if (sfUdpSocket_sendPacket(appl->socket, appl->packetSend, player_get_connection(player)->ipAddress, player_get_connection(player)->port) != sfSocketDone) {
+        wprintf(L"Status update to player: %ls failed\\n\"", player_name(player));
+    }
+}
+
+static void app_notify_dead_user(APPLICATION* appl, PLAYER* player) {
+    player_lock_mutex(player);
+    player_reset_position(player);
+
+    sfPacket_writeInt32(appl->packetSend, (int)KILLED + 1);
+    sfPacket_writeInt32(appl->packetSend, player_id_get(player));
+    sfPacket_writeFloat(appl->packetSend, player_get_position(player)->xPosition);
+    sfPacket_writeFloat(appl->packetSend, player_get_position(player)->yPosition);
+    sfPacket_writeInt32(appl->packetSend, (int)player_get_position(player)->direction);
+    sfPacket_writeInt32(appl->packetSend, (int)player_killed_by_get(player));
+
+    player_unlock_mutex(player);
+
+    LINKED_LIST_ITERATOR iteratorInfo;
+    ls_iterator_init(&iteratorInfo, appl->players);
+    while (ls_iterator_has_next(&iteratorInfo)) {
+        PLAYER* playerKilled = *(PLAYER**)ls_iterator_move_next(&iteratorInfo);
+        if (sfUdpSocket_sendPacket(appl->socket, appl->packetSend, player_get_connection(playerKilled)->ipAddress, player_get_connection(playerKilled)->port) != sfSocketDone) {
+            wprintf(L"Notify dead user to the user: %ls failed\n", player_name(playerKilled));
+        }
+    }
+}
+
+void app_handle_player_quit(APPLICATION* appl, PLAYER* player) {
+    wprintf(L"Player: %ls, left the game.\n", player_name(player));
+    player_lock_mutex(player);
+
+    sfPacket_writeInt32(appl->packetSend, (int)PLAYER_QUIT + 1);
+    sfPacket_writeInt32(appl->packetSend, player_id_get(player));
+
+    player_unlock_mutex(player);
+    LINKED_LIST_ITERATOR iteratorInfo;
+    ls_iterator_init(&iteratorInfo, appl->players);
+    while (ls_iterator_has_next(&iteratorInfo)) {
+        PLAYER* playerInfo = *(PLAYER**)ls_iterator_move_next(&iteratorInfo);
+        if (sfUdpSocket_sendPacket(appl->socket, appl->packetSend, player_get_connection(playerInfo)->ipAddress, player_get_connection(playerInfo)->port) != sfSocketDone) {
+            wprintf(L"Notify user: %ls that user left, failed.\n", player_name(playerInfo));
+        }
+    }
+
+    player_score_sent(player, true);
+    sfPacket_clear(appl->packetSend);
+    sfPacket_writeInt32(appl->packetSend, (int)END + 1);
+
+    ls_iterator_reset(&iteratorInfo);
+    while (ls_iterator_has_next(&iteratorInfo)) {
+        PLAYER* playerInfo = *(PLAYER**)ls_iterator_move_next(&iteratorInfo);
+        sfPacket_writeInt32(appl->packetSend, player_id_get(playerInfo));
+        sfPacket_writeInt32(appl->packetSend, player_score_get(playerInfo));
+    }
+
+    sfUdpSocket_sendPacket(appl->socket, appl->packetSend, player_get_connection(player)->ipAddress, player_get_connection(player)->port);
+}
+
 void* app_send_data(void *app) {
-    APPLICATION* appl = (APPLICATION*)app;
+    APPLICATION *appl = (APPLICATION *) app;
 
     LINKED_LIST_ITERATOR iterator;
     LINKED_LIST_ITERATOR iteratorInfo;
 
     ls_iterator_init(&iterator, appl->players);
     ls_iterator_init(&iteratorInfo, appl->players);
+
     while (appl->isRunning) {
         pthread_mutex_lock(appl->mutex);
         while (!appl->sendData) {
@@ -67,110 +147,101 @@ void* app_send_data(void *app) {
         ls_iterator_reset(&iterator);
 
         while (ls_iterator_has_next(&iterator)) {
-            PLAYER* player = *(PLAYER**)ls_iterator_move_next(&iterator);
+            PLAYER *player = *(PLAYER **) ls_iterator_move_next(&iterator);
 
             sfPacket_clear(appl->packetSend);
             if (!player_killed_get(player) && !player_left_get(player)) {
-                sfPacket_writeInt32(appl->packetSend, (int)STATUS + 1);
-                ls_iterator_reset(&iteratorInfo);
-
-                while (ls_iterator_has_next(&iteratorInfo)) {
-                    PLAYER* playerInfo = *(PLAYER**)ls_iterator_move_next(&iteratorInfo);
-                    if (player_id_get(playerInfo) != player_id_get(player)) {
-                        player_lock_mutex(playerInfo);
-
-                        sfPacket_writeInt32(appl->packetSend, player_id_get(playerInfo));
-                        sfPacket_writeFloat(appl->packetSend, player_get_position(playerInfo)->xPosition);
-                        sfPacket_writeFloat(appl->packetSend, player_get_position(playerInfo)->yPosition);
-                        sfPacket_writeInt32(appl->packetSend, (int)player_get_position(playerInfo)->direction);
-                        sfPacket_writeBool(appl->packetSend, player_fired_get(playerInfo));
-
-                        player_unlock_mutex(playerInfo);
-                    }
-                }
-                if (sfUdpSocket_sendPacket(appl->socket, appl->packetSend, player_get_connection(player)->ipAddress, player_get_connection(player)->port) != sfSocketDone) {
-//                    printf("Status update to player: %s failed\n", player_name(player));
-                    wprintf(L"Status update to player: %ls failed\\n\"", player_name(player));
-                }
+                app_handle_player_status(appl, player); // Using the function here
             } else if (player_killed_get(player) && !player_left_get(player)) {
-                player_lock_mutex(player);
-                player_reset_position(player);
-
-                sfPacket_writeInt32(appl->packetSend, (int)KILLED + 1);
-                sfPacket_writeInt32(appl->packetSend, player_id_get(player));
-                sfPacket_writeFloat(appl->packetSend, player_get_position(player)->xPosition);
-                sfPacket_writeFloat(appl->packetSend, player_get_position(player)->yPosition);
-                sfPacket_writeInt32(appl->packetSend, (int)player_get_position(player)->direction);
-                sfPacket_writeInt32(appl->packetSend, (int)player_killed_by_get(player));
-
-                player_unlock_mutex(player);
-
-                ls_iterator_reset(&iteratorInfo);
-                while (ls_iterator_has_next(&iteratorInfo)) {
-                    PLAYER* playerKilled = *(PLAYER**)ls_iterator_move_next(&iteratorInfo);
-                    if (sfUdpSocket_sendPacket(appl->socket, appl->packetSend, player_get_connection(playerKilled)->ipAddress, player_get_connection(playerKilled)->port) != sfSocketDone) {
-//                        printf("Notify dead user to the user: %s failed\n", player_name(playerKilled));
-                        wprintf(L"Notify dead user to the user: %ls failed\n", player_name(playerKilled));
-                    }
-                }
+                app_notify_dead_user(appl, player);
             } else if (player_left_get(player) && !player_sent_score_get(player)) {
-//                printf("Player: %s, left the game.\n", player_name(player));
-                wprintf(L"Player: %ls, left the game.\n", player_name(player));
-                player_lock_mutex(player);
-
-                sfPacket_writeInt32(appl->packetSend, (int)PLAYER_QUIT + 1);
-                sfPacket_writeInt32(appl->packetSend, player_id_get(player));
-
-                player_unlock_mutex(player);
-                ls_iterator_reset(&iteratorInfo);
-                while (ls_iterator_has_next(&iteratorInfo)) {
-                    PLAYER* playerInfo = *(PLAYER**)ls_iterator_move_next(&iteratorInfo);
-                    if (sfUdpSocket_sendPacket(appl->socket, appl->packetSend, player_get_connection(playerInfo)->ipAddress, player_get_connection(playerInfo)->port) != sfSocketDone) {
-//                        printf("Notify user: %s that user left, failed.\n", player_name(playerInfo));
-                        wprintf(L"Notify user: %ls that user left, failed.\n", player_name(playerInfo));
-                    }
-                }
-
-                player_score_sent(player, true);
-                sfPacket_clear(appl->packetSend);
-                sfPacket_writeInt32(appl->packetSend, (int)END + 1);
-
-                ls_iterator_reset(&iteratorInfo);
-                while (ls_iterator_has_next(&iteratorInfo)) {
-                    PLAYER* playerInfo = *(PLAYER**)ls_iterator_move_next(&iteratorInfo);
-                    sfPacket_writeInt32(appl->packetSend, player_id_get(playerInfo));
-                    sfPacket_writeInt32(appl->packetSend, player_score_get(playerInfo));
-                }
-
-                sfUdpSocket_sendPacket(appl->socket, appl->packetSend, player_get_connection(player)->ipAddress, player_get_connection(player)->port);
+                app_handle_player_quit(appl, player);
             }
         }
+
         ls_iterator_reset(&iteratorInfo);
         while (ls_iterator_has_next(&iteratorInfo)) {
-            PLAYER* playerInfo = *(PLAYER**)ls_iterator_move_next(&iteratorInfo);
+            PLAYER *playerInfo = *(PLAYER **) ls_iterator_move_next(&iteratorInfo);
             player_set_fired(playerInfo, false);
         }
+
         appl->sendData = false;
         usleep(20000);
     }
     return 0;
 }
 
+// Function to handle status message
+static void app_handle_status_message(APPLICATION* app, int pId, float tmpX, float tmpY, int tmpDir, bool pFIred) {
+    LINKED_LIST_ITERATOR iterator;
+    ls_iterator_init(&iterator, app->players);
+
+    while (ls_iterator_has_next(&iterator)) {
+        PLAYER* player = *(PLAYER**) ls_iterator_move_next(&iterator);
+
+        if (player_id_get(player) == pId) {
+            player_lock_mutex(player);
+            player_update_position(player, tmpX, tmpY, tmpDir);
+            player_set_fired(player, pFIred);
+            player_unlock_mutex(player);
+            break;
+        }
+    }
+}
+
+// Function to handle killed message
+static void app_handle_killed_message(APPLICATION* app, int pId, int killer) {
+    LINKED_LIST_ITERATOR iterator;
+    ls_iterator_init(&iterator, app->players);
+
+    while (ls_iterator_has_next(&iterator)) {
+        PLAYER* player = *(PLAYER**) ls_iterator_move_next(&iterator);
+
+        if (player_id_get(player) == pId) {
+            player_lock_mutex(player);
+            player_killed(player);
+            player_killed_by(player, killer);
+            player_unlock_mutex(player);
+        } else if (player_id_get(player) == killer) {
+            player_increase_score(player);
+        }
+    }
+}
+
+// Function to handle END message
+void app_handle_end_message(APPLICATION* app, int pId) {
+    LINKED_LIST_ITERATOR iterator;
+    ls_iterator_init(&iterator, app->players);
+
+    while (ls_iterator_has_next(&iterator)) {
+        PLAYER* player = *(PLAYER**) ls_iterator_move_next(&iterator);
+
+        if (player_id_get(player) == pId) {
+            player_lock_mutex(player);
+            player_left(player, true);
+            player_unlock_mutex(player);
+            break;
+        }
+    }
+
+    app->numberOfLeftPlayers++;
+    if (ls_get_size(app->players) == app->numberOfLeftPlayers) {
+        app->isRunning = false;
+    }
+}
+
+// Function to receive and process game data
 void* app_receive_data(void *app) {
     APPLICATION* appl = (APPLICATION*)app;
     sfIpAddress ipAddress = sfIpAddress_Any;
     unsigned short port;
-    float tmpX = 0, tmpY = 0;
-    int tmpDir, pId;
-    bool pFIred;
     int messageType;
-    int killer;
+    int pId, tmpDir, killer;
+    float tmpX, tmpY;
+    bool pFIred;
 
     LINKED_LIST_ITERATOR iterator;
-    LINKED_LIST_ITERATOR iteratorInfo;
-
     ls_iterator_init(&iterator, appl->players);
-    ls_iterator_init(&iteratorInfo, appl->players);
 
     while (appl->isRunning) {
         sfPacket_clear(appl->packetReceive);
@@ -180,62 +251,36 @@ void* app_receive_data(void *app) {
             messageType--;
         }
 
-        if (messageType == STATUS) {
-            pId = (int)sfPacket_readInt32(appl->packetReceive);
-            tmpX = (float)sfPacket_readFloat(appl->packetReceive);
-            tmpY = (float)sfPacket_readFloat(appl->packetReceive);
-            tmpDir = (int)sfPacket_readInt32(appl->packetReceive);
-            pFIred = (bool)sfPacket_readBool(appl->packetReceive);
-            ls_iterator_reset(&iterator);
-            while (ls_iterator_has_next(&iterator)) {
-                PLAYER* player = *(PLAYER**) ls_iterator_move_next(&iterator);
-                if (player_id_get(player) == pId) {
-                    player_lock_mutex(player);
-                    player_update_position(player, tmpX, tmpY, tmpDir);
-                    player_set_fired(player, pFIred);
+        switch (messageType) {
+            case STATUS:
+                pId = sfPacket_readInt32(appl->packetReceive);
+                tmpX = sfPacket_readFloat(appl->packetReceive);
+                tmpY = sfPacket_readFloat(appl->packetReceive);
+                tmpDir = sfPacket_readInt32(appl->packetReceive);
+                pFIred = sfPacket_readBool(appl->packetReceive);
+                app_handle_status_message(appl, pId, tmpX, tmpY, tmpDir, pFIred);
+                break;
 
-                    player_unlock_mutex(player);
-                    break;
-                }
-            }
-        } else if (messageType == KILLED) {
-            pId = (int)sfPacket_readInt32(appl->packetReceive);
-            killer = (int)sfPacket_readInt32(appl->packetReceive);
+            case KILLED:
+                pId = sfPacket_readInt32(appl->packetReceive);
+                killer = sfPacket_readInt32(appl->packetReceive);
+                app_handle_killed_message(appl, pId, killer);
+                break;
 
-            ls_iterator_reset(&iterator);
-            while (ls_iterator_has_next(&iterator)) {
-                PLAYER* player = *(PLAYER**) ls_iterator_move_next(&iterator);
-                if (player_id_get(player) == pId) {
-                    player_lock_mutex(player);
-                    player_killed(player);
-                    player_killed_by(player, killer);
-                    player_unlock_mutex(player);
-                } else if (player_id_get(player) == killer) {
-                    player_increase_score(player);
-                }
-            }
-        } else if (messageType == END) {
-            pId = (int)sfPacket_readInt32(appl->packetReceive);
-            ls_iterator_reset(&iterator);
-            while (ls_iterator_has_next(&iterator)) {
-                PLAYER* player = *(PLAYER**) ls_iterator_move_next(&iterator);
-                if (player_id_get(player) == pId) {
-                    player_lock_mutex(player);
-                    player_left(player, true);
-                    player_unlock_mutex(player);
-                    break;
-                }
-            }
-            appl->numberOfLeftPlayers++;
-            if (ls_get_size(appl->players) == appl->numberOfLeftPlayers) {
-                appl->isRunning = false;
-            }
+            case END:
+                pId = sfPacket_readInt32(appl->packetReceive);
+                app_handle_end_message(appl, pId);
+                break;
+            default:
+                break;
         }
+
         appl->sendData = true;
         pthread_cond_signal(appl->sendDataCond);
 
         usleep(20000);
     }
+
     return 0;
 }
 

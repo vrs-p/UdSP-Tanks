@@ -210,7 +210,8 @@ void mmenu_update_stats(MMENU *mmenu, int activeGames, int activePlayers) {
 
     sfVector2f vecActiveGames = {(SCREEN_WIDTH - sfText_getLocalBounds(mmenu->activeGames).width) / 2, 450.f};
     sfText_setPosition(mmenu->activeGames, vecActiveGames);
-    sfText_setPosition(mmenu->controllerStatus, vecActiveGames);
+    sfVector2f vecControllerStatus = {((SCREEN_WIDTH - sfText_getLocalBounds(mmenu->activeGames).width) / 2) - 30, 450.f};
+    sfText_setPosition(mmenu->controllerStatus, vecControllerStatus);
     sfVector2f vecActivePlayers = {(SCREEN_WIDTH - sfText_getLocalBounds(mmenu->activePlayers).width) / 2, 500.f};
     sfText_setPosition(mmenu->activePlayers, vecActivePlayers);
 }

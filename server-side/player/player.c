@@ -9,9 +9,11 @@
 void player_create(PLAYER *player, int id, wchar_t *playerName, float xPosition, float yPosition, DIRECTION direction,
                    unsigned short port, sfIpAddress ipAddress) {
     player->id = id;
-    player->playerName = malloc(sizeof(wchar_t) * wcslen(playerName) + 1);
-    wcscpy(player->playerName, playerName);
-//    strcpy(player->playerName, playerName);
+    size_t playerNameLength = wcslen(playerName);
+    player->playerName = malloc(sizeof(wchar_t) * (playerNameLength + 1));
+    if (player->playerName != NULL) {
+        wcscpy(player->playerName, playerName);
+    }
 
     player->connection = malloc(sizeof(CONNECTION));
     player->position = malloc(sizeof(POSITION));
