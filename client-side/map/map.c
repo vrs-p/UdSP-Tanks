@@ -12,32 +12,32 @@ static void create_wall(sfVector2f size, sfVector2f position, LINKED_LIST *list)
 }
 
 static sfVector2f generate_vector(int min, int max) {
-    float xAxis = (float)(min + rand() / (RAND_MAX / (max - min + 1) + 1));
-    float yAxis = (float)(min + rand() / (RAND_MAX / (max - min + 1) + 1));
-    return (sfVector2f){xAxis, yAxis};
+    float xAxis = (float) (min + rand() / (RAND_MAX / (max - min + 1) + 1));
+    float yAxis = (float) (min + rand() / (RAND_MAX / (max - min + 1) + 1));
+    return (sfVector2f) {xAxis, yAxis};
 }
 
 void map_create1(MAP *map) {
     sfVector2f sizes[] = {
             {100.0f, 100.0f},
             {150.0f, 25.0f},
-            {10.0f, 80.0f},
-            {30.0f, 30.0f},
-            {20.0f, 130.0f},
-            {45.0f, 10.0f},
-            {45.0f, 10.0f},
-            {10.0f, 45.0f},
-            {10.0f, 45.0f},
-            {10.0f, 45.0f},
-            {10.0f, 45.0f},
-            {45.0f, 10.0f},
-            {45.0f, 10.0f}
+            {10.0f,  80.0f},
+            {30.0f,  30.0f},
+            {20.0f,  130.0f},
+            {45.0f,  10.0f},
+            {45.0f,  10.0f},
+            {10.0f,  45.0f},
+            {10.0f,  45.0f},
+            {10.0f,  45.0f},
+            {10.0f,  45.0f},
+            {45.0f,  10.0f},
+            {45.0f,  10.0f}
     };
 
     sfVector2f positions[] = {
             {100.0f, 100.0f},
             {500.0f, 180.0f},
-            {90.0f, 450.0f},
+            {90.0f,  450.0f},
             {600.0f, 600.0f},
             {700.0f, 650.0f},
             {330.0f, 330.0f},
@@ -58,16 +58,16 @@ void map_create1(MAP *map) {
 void map_create2(MAP *map) {
     sfVector2f sizes[] = {
             {120.0f, 30.0f},
-            {80.0f, 50.0f},
-            {50.0f, 100.0f},
+            {80.0f,  50.0f},
+            {50.0f,  100.0f},
             {200.0f, 20.0f},
-            {40.0f, 150.0f},
-            {70.0f, 70.0f},
+            {40.0f,  150.0f},
+            {70.0f,  70.0f},
             {120.0f, 20.0f}
     };
 
     sfVector2f positions[] = {
-            {50.0f, 50.0f},
+            {50.0f,  50.0f},
             {200.0f, 100.0f},
             {400.0f, 200.0f},
             {150.0f, 350.0f},
@@ -82,32 +82,32 @@ void map_create2(MAP *map) {
 }
 
 void map_create3(MAP *map) {
-    sfVector2f sizes[] = {
-            {80.0f, 80.0f},
-            {120.0f, 20.0f},
-            {60.0f, 150.0f},
-            {180.0f, 40.0f},
-            {50.0f, 100.0f},
-            {100.0f, 30.0f},
-            {90.0f, 90.0f}
-    };
+    sfVector2f *sizes = malloc(7 * sizeof(sfVector2f));
+    *(sizes + 0) = (sfVector2f) {80.0f,  80.0f};
+    *(sizes + 1) = (sfVector2f) {120.0f, 20.0f};
+    *(sizes + 2) = (sfVector2f) {60.0f,  150.0f};
+    *(sizes + 3) = (sfVector2f) {180.0f, 40.0f};
+    *(sizes + 4) = (sfVector2f) {50.0f,  100.0f};
+    *(sizes + 4) = (sfVector2f) {100.0f, 30.0f};
+    *(sizes + 6) = (sfVector2f) {90.0f,  90.0f};
 
-    sfVector2f positions[] = {
-            {50.0f, 50.0f},
-            {200.0f, 100.0f},
-            {400.0f, 200.0f},
-            {150.0f, 350.0f},
-            {500.0f, 400.0f},
-            {300.0f, 500.0f},
-            {100.0f, 600.0f}
-    };
+    sfVector2f *positions = malloc(7 * sizeof(sfVector2f));
+    *(positions + 0) = (sfVector2f) {50.0f, 50.0f};
+    *(positions + 1) = (sfVector2f) {200.0f, 100.0f};
+    *(positions + 2) = (sfVector2f) {400.0f, 200.0f};
+    *(positions + 3) = (sfVector2f) {150.0f, 350.0f};
+    *(positions + 4) = (sfVector2f) {500.0f, 400.0f};
+    *(positions + 4) = (sfVector2f) {300.0f, 500.0f};
+    *(positions + 6) = (sfVector2f) {100.0f, 600.0f};
 
-    for (int i = 0; i < sizeof(sizes) / sizeof(sizes[0]); ++i) {
-        create_wall(sizes[i], positions[i], map->listOfWalls);
+    for (int i = 0; i < 7; ++i) {
+        create_wall(*(sizes + i), *(positions + i), map->listOfWalls);
     }
+    free(sizes);
+    free(positions);
 }
 
-void map_create_random(MAP* map, unsigned int seed) {
+void map_create_random(MAP *map, unsigned int seed) {
     int numberOfObjects = 5;
     int minSize = 20, maxSize = 200;
     int minPosition = 50, maxPosition = 500;
@@ -123,7 +123,7 @@ void map_create_random(MAP* map, unsigned int seed) {
 
 
 void map_destroy_rectangle_shape(void *shape) {
-    sfRectangleShape* rShape = *(sfRectangleShape**)shape;
+    sfRectangleShape *rShape = *(sfRectangleShape **) shape;
     sfRectangleShape_destroy(rShape);
 //    free(rShape);
 }
