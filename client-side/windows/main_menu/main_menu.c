@@ -101,21 +101,30 @@ static void mmenu_initialize_window(MMENU* mmenu) {
 }
 
 static void mmenu_validate(MMENU* mmenu) {
-    if (btn_is_mouse_over(mmenu->btnCrtServer, mmenu->window)) {
-        btn_set_bg_color(mmenu->btnCrtServer, sfColor_fromRGB(0, 153, 0));
-        btn_set_text_color(mmenu->btnCrtServer, sfWhite);
-    } else if (btn_is_mouse_over(mmenu->btnJoinServer, mmenu->window)) {
-        btn_set_bg_color(mmenu->btnJoinServer, sfColor_fromRGB(0, 153, 0));
-        btn_set_text_color(mmenu->btnJoinServer, sfWhite);
-    } else if (btn_is_mouse_over(mmenu->btnKillServer, mmenu->window)) {
-        btn_set_bg_color(mmenu->btnKillServer, sfColor_fromRGB(153, 0, 0));
-        btn_set_text_color(mmenu->btnKillServer, sfWhite);
+    if (!mmenu->serverIsOff) {
+        if (btn_is_mouse_over(mmenu->btnCrtServer, mmenu->window)) {
+            btn_set_bg_color(mmenu->btnCrtServer, sfColor_fromRGB(0, 153, 0));
+            btn_set_text_color(mmenu->btnCrtServer, sfWhite);
+        } else if (btn_is_mouse_over(mmenu->btnJoinServer, mmenu->window)) {
+            btn_set_bg_color(mmenu->btnJoinServer, sfColor_fromRGB(0, 153, 0));
+            btn_set_text_color(mmenu->btnJoinServer, sfWhite);
+        } else if (btn_is_mouse_over(mmenu->btnKillServer, mmenu->window)) {
+            btn_set_bg_color(mmenu->btnKillServer, sfColor_fromRGB(153, 0, 0));
+            btn_set_text_color(mmenu->btnKillServer, sfWhite);
+        } else {
+            btn_set_bg_color(mmenu->btnCrtServer, sfColor_fromRGB(0, 255, 0));
+            btn_set_text_color(mmenu->btnCrtServer, sfBlack);
+            btn_set_bg_color(mmenu->btnJoinServer, sfColor_fromRGB(0, 255, 0));
+            btn_set_text_color(mmenu->btnJoinServer, sfBlack);
+            btn_set_bg_color(mmenu->btnKillServer, sfColor_fromRGB(255, 0, 0));
+            btn_set_text_color(mmenu->btnKillServer, sfBlack);
+        }
     } else {
-        btn_set_bg_color(mmenu->btnCrtServer, sfColor_fromRGB(0, 255, 0));
+        btn_set_bg_color(mmenu->btnCrtServer, sfColor_fromRGB(192, 192, 192));
         btn_set_text_color(mmenu->btnCrtServer, sfBlack);
-        btn_set_bg_color(mmenu->btnJoinServer, sfColor_fromRGB(0, 255, 0));
+        btn_set_bg_color(mmenu->btnJoinServer, sfColor_fromRGB(192, 192, 192));
         btn_set_text_color(mmenu->btnJoinServer, sfBlack);
-        btn_set_bg_color(mmenu->btnKillServer, sfColor_fromRGB(255, 0, 0));
+        btn_set_bg_color(mmenu->btnKillServer, sfColor_fromRGB(192, 192, 192));
         btn_set_text_color(mmenu->btnKillServer, sfBlack);
     }
 }
@@ -148,11 +157,11 @@ void mmenu_render(MMENU* mmenu) {
             if (event.type == sfEvtMouseMoved) {
                 mmenu_validate(mmenu);
             } else if (event.type == sfEvtMouseButtonPressed) {
-                if (btn_is_mouse_over(mmenu->btnCrtServer, mmenu->window)) {
+                if (btn_is_mouse_over(mmenu->btnCrtServer, mmenu->window) && !mmenu->serverIsOff) {
                     mmenu->create = true;
-                } else if (btn_is_mouse_over(mmenu->btnJoinServer, mmenu->window)) {
+                } else if (btn_is_mouse_over(mmenu->btnJoinServer, mmenu->window) && !mmenu->serverIsOff) {
                     mmenu->join = true;
-                } else if (btn_is_mouse_over(mmenu->btnKillServer, mmenu->window)) {
+                } else if (btn_is_mouse_over(mmenu->btnKillServer, mmenu->window) && !mmenu->serverIsOff) {
                     mmenu->kill = true;
                 }
             } else if (event.type == sfEvtClosed || event.text.unicode == 113) {
