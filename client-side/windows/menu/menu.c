@@ -405,16 +405,18 @@ sfIpAddress menu_get_ip_address(MENU* menu) {
 
 int menu_get_port(MENU* menu) {
     TEXTBOX* textbox = *(TEXTBOX**)ls_access_at_2(menu->textboxes, 2);
-    char* endptr;
-    long int num = wcstol(txtbox_get_text(textbox), &endptr, 10);
-    return num;
+    wchar_t *endptr;
+    wchar_t *text = txtbox_get_text(textbox);
+    long int num = wcstol(text, &endptr, 10);
+    return (int)num;
 }
 
 int menu_get_new_port(MENU* menu) {
     TEXTBOX* textbox = *(TEXTBOX**)ls_access_at_2(menu->textboxes, 3);
-    char* endptr;
-    long int num = wcstol(txtbox_get_text(textbox), &endptr, 10);
-    return num;
+    wchar_t *endptr;
+    wchar_t *text = txtbox_get_text(textbox);
+    long int num = wcstol(text, &endptr, 10);
+    return (int)num;
 }
 
 wchar_t* menu_get_name(MENU* menu) {
@@ -424,14 +426,16 @@ wchar_t* menu_get_name(MENU* menu) {
 
 int menu_get_num_players(MENU* menu) {
     TEXTBOX* textbox = *(TEXTBOX**)ls_access_at_2(menu->textboxes, 4);
-    char* endptr;
-    long int num = wcstol(txtbox_get_text(textbox), &endptr, 10);
-    return num;
+    wchar_t *endptr;
+    wchar_t *text = txtbox_get_text(textbox);
+    long int num = wcstol(text, &endptr, 10);
+    return (int)num;
 }
 
 int menu_get_id_map(MENU* menu) {
     TEXTBOX* textbox = *(TEXTBOX**)ls_access_at_2(menu->textboxes, 5);
-    char* endptr;
-    long int num = wcstol(txtbox_get_text(textbox), &endptr, 10);
-    return num;
+    wchar_t *endptr;
+    wchar_t *text = txtbox_get_text(textbox);
+    long int num = wcstol(text, &endptr, 10);
+    return (int)num;
 }
