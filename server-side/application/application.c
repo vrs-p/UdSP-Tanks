@@ -168,6 +168,7 @@ void* app_send_data(void *app) {
         appl->sendData = false;
         usleep(20000);
     }
+    sfUdpSocket_unbind(appl->socket);
     return 0;
 }
 

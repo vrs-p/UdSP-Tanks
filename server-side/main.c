@@ -1,4 +1,3 @@
-#include "application/application.h"
 #include "server_controller/server_controller.h"
 
 int main() {
