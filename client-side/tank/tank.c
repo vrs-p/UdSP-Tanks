@@ -19,6 +19,7 @@ void tank_create(TANK *tank) {
     tank->reloadTime = 3;
     tank->direction = UP;
 
+    tank->score = 0;
     tank->lastFire = time(NULL);
 
     tank->mutex = malloc(sizeof(pthread_mutex_t));

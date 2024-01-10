@@ -209,7 +209,7 @@ static void app_wait_for_game_settings(APPLICATION* app) {
                 float scaleY = sfSprite_getScale(tank_get_sprite(app->clientTank)).y;
 
                 posX = posX - sizeY * scaleY;
-                posY = posY - sizeY * scaleY + sizeX + scaleX;
+                posY = posY - sizeX * scaleX * 2 / 3;
                 break;
             }
         }
@@ -351,13 +351,13 @@ static void app_check_borders(APPLICATION* app) {
         sfSprite_setPosition(tank_get_sprite(app->clientTank), vec);
     }
 
-    if (posY > SCREEN_HEIGHT - SCORE_HEIGHT) {
-        sfVector2f vec = {posX, SCREEN_HEIGHT - SCORE_HEIGHT};
+    if (posY > SCREEN_HEIGHT) {
+        sfVector2f vec = {posX, SCREEN_HEIGHT};
         sfSprite_setPosition(tank_get_sprite(app->clientTank), vec);
     }
 
-    if (posY < 0) {
-        sfVector2f vec = {posX, 0};
+    if (posY < 50) {
+        sfVector2f vec = {posX, 50};
         sfSprite_setPosition(tank_get_sprite(app->clientTank), vec);
     }
 }
@@ -700,7 +700,11 @@ static void* app_receive_data(void* application) {
                     TANK* tank = *(TANK**)ls_iterator_move_next(&iterator);
                     if (tank_get_player_id(tank) == killerID) {
                         bullet_set_fired(tank_get_bullet(tank), false);
+                        tank_set_score(tank, tank_get_score(tank) + 1);
                     }
+                }
+                if (tank_get_player_id(app->clientTank) == killerID) {
+                    tank_set_score(app->clientTank, tank_get_score(app->clientTank) + 1);
                 }
             } else if (msgType == END) {
                 for (int i = 0; i < app->numberOfPlayers; ++i) {
