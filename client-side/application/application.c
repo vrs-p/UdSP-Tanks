@@ -79,7 +79,7 @@ LINKED_LIST* app_get_other_tanks(APPLICATION* app) {
     return app->otherTanks;
 }
 
-static void sendConnectRequest(APPLICATION* app) {
+static void app_send_connect_request(APPLICATION* app) {
     sfPacket_clear(app->packetSend);
     sfPacket_writeWideString(app->packetSend, tank_get_player_name(app->clientTank));
 
@@ -89,7 +89,7 @@ static void sendConnectRequest(APPLICATION* app) {
 }
 
 static void app_connect_to_server(APPLICATION* app) {
-    sendConnectRequest(app);
+    app_send_connect_request(app);
 
     sfIpAddress ipAddress = sfIpAddress_Any;
     unsigned short port;
