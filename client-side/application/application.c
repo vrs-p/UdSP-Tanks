@@ -21,6 +21,9 @@ void app_create(APPLICATION* app) {
     sfText_setCharacterSize(app->nameOfPlayer, 11);
     sfText_setFillColor(app->nameOfPlayer, sfWhite);
 
+    app->scores = malloc(sizeof(LINKED_LIST));
+    ls_create(app->scores, sizeof(sfText*));
+
     app->clientTank = malloc(sizeof(TANK));
     tank_create(app->clientTank);
     app->otherTanks = malloc(sizeof(LINKED_LIST));
@@ -36,6 +39,14 @@ void app_destroy(APPLICATION* app) {
     sfText_destroy(app->nameOfPlayer);
     sfRenderWindow_destroy(app->window);
     sfUdpSocket_destroy(app->socket);
+
+    LINKED_LIST_ITERATOR iterator;
+    ls_iterator_init(&iterator, app->scores);
+    while (ls_iterator_has_next(&iterator)) {
+        sfText* item = *(sfText**)ls_iterator_move_next(&iterator);
+        sfText_destroy(item);
+    }
+    ls_destroy(app->scores);
 
     tank_destroy(app->clientTank);
     ls_run_function(app->otherTanks, tank_destroy_void);
@@ -198,7 +209,7 @@ static void app_wait_for_game_settings(APPLICATION* app) {
                 float scaleY = sfSprite_getScale(tank_get_sprite(app->clientTank)).y;
 
                 posX = posX - sizeY * scaleY;
-                posY = posY - sizeY * scaleY + sizeX + scaleX;
+                posY = posY - sizeX * scaleX * 2 / 3;
                 break;
             }
         }
@@ -229,7 +240,8 @@ static void app_wait_for_game_settings(APPLICATION* app) {
 
 
 #define SCREEN_WIDTH 800
-#define SCREEN_HEIGHT 800
+#define SCREEN_HEIGHT 850
+#define SCORE_HEIGHT 50
 
 static void app_initialize_window(APPLICATION* app) {
     sfVideoMode mode = {SCREEN_WIDTH, SCREEN_HEIGHT, 32};
@@ -344,10 +356,58 @@ static void app_check_borders(APPLICATION* app) {
         sfSprite_setPosition(tank_get_sprite(app->clientTank), vec);
     }
 
-    if (posY < 0) {
-        sfVector2f vec = {posX, 0};
+    if (posY < 50) {
+        sfVector2f vec = {posX, 50};
         sfSprite_setPosition(tank_get_sprite(app->clientTank), vec);
     }
+}
+
+static void app_render_score(APPLICATION* app) {
+    sfVector2f positions[] = {
+            {0, 0},
+            {400, 0},
+            {0, 24},
+            {400, 24}
+    };
+
+    for (int i = 0; i < ls_get_size(app->otherTanks) + 1; i++) {
+        sfText* tmpText = sfText_create();
+        sfText_setFont(tmpText, app->font);
+        sfText_setCharacterSize(tmpText, 11);
+        sfText_setFillColor(tmpText, sfWhite);
+        sfText_setPosition(tmpText, positions[i]);
+        ls_push(app->scores, &tmpText);
+    }
+
+    wchar_t strPlayerScore[200] = L"";
+    wcscat(strPlayerScore, tank_get_player_name(app->clientTank));
+    wcscat(strPlayerScore, L": ");
+    wchar_t* strScore = malloc(11 * sizeof(wchar_t));
+    swprintf(strScore, 11, L"%d", tank_get_score(app->clientTank));
+    wcscat(strPlayerScore, strScore);
+    sfText_setUnicodeString(*(sfText**)ls_access_at_2(app->scores, 0), strPlayerScore);
+
+    for (int i = 0; i < ls_get_size(app->otherTanks); i++) {
+        wchar_t strTmpScore[200] = L"";
+        wcscat(strTmpScore, tank_get_player_name(*(TANK**)ls_access_at_2(app->otherTanks, i)));
+        wcscat(strTmpScore, L": ");
+        swprintf(strScore, 11, L"%d", tank_get_score(*(TANK**)ls_access_at_2(app->otherTanks, i)));
+        wcscat(strTmpScore, strScore);
+        sfText_setUnicodeString(*(sfText**)ls_access_at_2(app->scores, i + 1), strTmpScore);
+    }
+
+    sfRectangleShape* barrier = sfRectangleShape_create();
+    sfVector2f vec = {SCREEN_WIDTH, 2};
+    sfRectangleShape_setSize(barrier, vec);
+    vec = (sfVector2f){0, SCORE_HEIGHT - 2};
+    sfRectangleShape_setPosition(barrier, vec);
+
+    sfRenderWindow_drawRectangleShape(app->window, barrier, NULL);
+    int i = 0;
+    do {
+        sfRenderWindow_drawText(app->window, *(sfText**)ls_access_at_2(app->scores, i), NULL);
+        i++;
+    } while (i < ls_get_size(app->scores));
 }
 
 #undef SCREEN_WIDTH
@@ -472,6 +532,7 @@ static void app_communication_with_server(APPLICATION* app) {
 static void app_draw(APPLICATION* app) {
     sfRenderWindow_clear(app->window, sfBlack);
 
+    app_render_score(app);
     tank_render(app->clientTank, app->window, map_get_list_of_walls(app->map));
 
     float tankPosX = sfSprite_getPosition(tank_get_sprite(app->clientTank)).x;
@@ -639,7 +700,11 @@ static void* app_receive_data(void* application) {
                     TANK* tank = *(TANK**)ls_iterator_move_next(&iterator);
                     if (tank_get_player_id(tank) == killerID) {
                         bullet_set_fired(tank_get_bullet(tank), false);
+                        tank_set_score(tank, tank_get_score(tank) + 1);
                     }
+                }
+                if (tank_get_player_id(app->clientTank) == killerID) {
+                    tank_set_score(app->clientTank, tank_get_score(app->clientTank) + 1);
                 }
             } else if (msgType == END) {
                 for (int i = 0; i < app->numberOfPlayers; ++i) {

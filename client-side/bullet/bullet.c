@@ -108,7 +108,7 @@ bool bullet_check_borders(BULLET* bullet, LINKED_LIST* listOfWalls) {
         }
     }
 
-    if (xPosition < 0 || xPosition > 800 || yPosition < 0 || yPosition > 800) {
+    if (xPosition < 0 || xPosition > 800 || yPosition < 50 || yPosition > 800) {
         canContinue = false;
     }
 

@@ -40,6 +40,8 @@ typedef struct application {
     sfFont* font;
     sfText* nameOfPlayer;
 
+    LINKED_LIST* scores;
+
     TANK* clientTank;
     LINKED_LIST* otherTanks;
     MAP* map;

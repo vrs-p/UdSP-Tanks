@@ -4,6 +4,7 @@
 #include "windows/main_menu/main_menu.h"
 #include "windows/menu/menu.h"
 
+//#define SERVER_IP "158.193.154.105"
 #define SERVER_IP "127.0.0.1"
 #define SERVER_PORT 13877
 

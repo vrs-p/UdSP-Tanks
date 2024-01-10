@@ -35,19 +35,19 @@ void map_create1(MAP *map) {
     };
 
     sfVector2f positions[] = {
-            {100.0f, 100.0f},
-            {500.0f, 180.0f},
-            {90.0f,  450.0f},
-            {600.0f, 600.0f},
-            {700.0f, 650.0f},
-            {330.0f, 330.0f},
-            {425.0f, 330.0f},
-            {330.0f, 330.0f},
-            {460.0f, 330.0f},
-            {330.0f, 425.0f},
-            {460.0f, 425.0f},
-            {330.0f, 460.0f},
-            {425.0f, 460.0f}
+            {100.0f, 150.0f},
+            {500.0f, 230.0f},
+            {90.0f,  500.0f},
+            {600.0f, 650.0f},
+            {700.0f, 700.0f},
+            {330.0f, 380.0f},
+            {425.0f, 380.0f},
+            {330.0f, 380.0f},
+            {460.0f, 380.0f},
+            {330.0f, 475.0f},
+            {460.0f, 475.0f},
+            {330.0f, 510.0f},
+            {425.0f, 510.0f}
     };
 
     for (int i = 0; i < sizeof(sizes) / sizeof(sizes[0]); ++i) {
@@ -67,13 +67,13 @@ void map_create2(MAP *map) {
     };
 
     sfVector2f positions[] = {
-            {50.0f,  50.0f},
-            {200.0f, 100.0f},
-            {400.0f, 200.0f},
-            {150.0f, 350.0f},
-            {500.0f, 400.0f},
-            {300.0f, 500.0f},
-            {100.0f, 600.0f}
+            {50.0f,  100.0f},
+            {200.0f, 150.0f},
+            {400.0f, 250.0f},
+            {150.0f, 400.0f},
+            {500.0f, 450.0f},
+            {300.0f, 550.0f},
+            {100.0f, 650.0f}
     };
 
     for (int i = 0; i < sizeof(sizes) / sizeof(sizes[0]); ++i) {
@@ -92,13 +92,13 @@ void map_create3(MAP *map) {
     *(sizes + 6) = (sfVector2f) {90.0f,  90.0f};
 
     sfVector2f *positions = malloc(7 * sizeof(sfVector2f));
-    *(positions + 0) = (sfVector2f) {50.0f, 50.0f};
-    *(positions + 1) = (sfVector2f) {200.0f, 100.0f};
-    *(positions + 2) = (sfVector2f) {400.0f, 200.0f};
-    *(positions + 3) = (sfVector2f) {150.0f, 350.0f};
-    *(positions + 4) = (sfVector2f) {500.0f, 400.0f};
-    *(positions + 4) = (sfVector2f) {300.0f, 500.0f};
-    *(positions + 6) = (sfVector2f) {100.0f, 600.0f};
+    *(positions + 0) = (sfVector2f) {50.0f, 100.0f};
+    *(positions + 1) = (sfVector2f) {200.0f, 150.0f};
+    *(positions + 2) = (sfVector2f) {400.0f, 250.0f};
+    *(positions + 3) = (sfVector2f) {150.0f, 400.0f};
+    *(positions + 4) = (sfVector2f) {500.0f, 450.0f};
+    *(positions + 4) = (sfVector2f) {300.0f, 550.0f};
+    *(positions + 6) = (sfVector2f) {100.0f, 650.0f};
 
     for (int i = 0; i < 7; ++i) {
         create_wall(*(sizes + i), *(positions + i), map->listOfWalls);

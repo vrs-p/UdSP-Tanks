@@ -3,7 +3,8 @@
 //
 
 #define SCREEN_WIDTH 800
-#define SCREEN_HEIGHT 800
+#define SCREEN_HEIGHT 850
+#define SCORE_HEIGHT 50
 
 #include <unistd.h>
 #include "application.h"
@@ -339,15 +340,15 @@ void app_wait_for_clients(APPLICATION *app) {
             tmpDir = UP;
         } else if (count == 1) {
             positionX = SCREEN_WIDTH / 2.0f;
-            positionY = 0;
+            positionY = SCORE_HEIGHT;
             tmpDir = DOWN;
         } else if (count == 2) {
             positionX = SCREEN_WIDTH;
-            positionY = SCREEN_HEIGHT / 2.0f;
+            positionY = ((SCREEN_HEIGHT - SCORE_HEIGHT) / 2.0f) + SCORE_HEIGHT;
             tmpDir = LEFT;
         } else {
             positionX = 0;
-            positionY = SCREEN_HEIGHT / 2.0f;
+            positionY = ((SCREEN_HEIGHT - SCORE_HEIGHT) / 2.0f) + SCORE_HEIGHT;
             tmpDir = RIGHT;
         }
 
