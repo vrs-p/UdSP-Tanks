@@ -10,18 +10,7 @@ Pre naklonovanie repozitára musí hrač spraviť:
 mkdir udsp-tanks
 git clone https://gitlab.com/LogiMou/udsp-tanks.git
 ```
-Následne sa hráč presunie do klientského adresára s názvom ***client-side***. Nižšie sú uvedené kroky, ktoré sú potrebné na to, aby bolo možné spustiť klientskú časť.
-### MinGW-64 - TODO!!!!!!!!!!
-TERAZ JE ASI TEORETICKY JEDNO AKÝ JE KOMPILÁTOR, ČI? Ja mám build tool ninja a kompilátor cc<BR><BR>
-Klient beží na kompilátore **MinGW-64**. Preto odporúčamé pred spustením hry mať tento kompílátor nainštalovaný.
-Sú rôzne cesty ako nainštalovať MinGW-64. Spomenieme 2 možnosti, ktoré sme využili my. Ak budete postupovať pomocou druhého
-spôsobu, tak si zároveň aj nainštalujete ***make*** pomocou ktorého si budete môcť vyskúšat spustiť Clientov **MakeFile**.
-
-```
-Celkovo neviem, či tu vôbec tieto dve časti nechávať
-1. Stiahnuť Clion, kde sa natívne nainštaluje MinGW-64
-2. Postupovať podľa tohto tutoriálu: https://www.youtube.com/watch?v=Zcy981HhGw0&ab_channel=SemicolonDotDev.
-```
+Následne sa hráč presunie do klientského adresára s názvom ***client-side***. Na spustenie klientskej časti stačí mať nejaké vývojové prostredie (v našom prípade CLion), cez ktoré si spustíme danú časť aplikácie.
 
 ### CSFML knižnica
 V tejto časti ukážeme ako nainštalovať **CSMFL** knižnicu, ktorá je potrebná pre beh hry. Z tejto knižnice využívame grafické časti
@@ -43,25 +32,16 @@ a tak isto aj sieťové komponenty, pomocou ktorých prebieha komunikácia medzi
 
 ## Server - TODO!!!!!!!!
 Serverová časť sa stará komúnikáciu s klientmi. Čaká na pripojenie sa všetkých hráčov, posiela začiatočné nastavenia hráčom (ich ID, súradnice, kde sa majú postaviť, ...). Zapisuje skóre a po ukončení hry rozpošle hráčom ich štatistiky.<br />
-Po spustení servera je vyžiadaný vstup od administrátora servera pre počet hráčov (koľko hráčov bude v danej hre). Následne, keď do konzoly zadá počet hráčov, tak sa čaká na ich pripojenie. Po ich pripojení sa rozpošlú inicializačné nastavenia a spustí sa hra.<br />
+Server je ovládaný pomocou server_controller-a. Pomocou neho môže hráč vytvárať a pripájať sa na servery alebo môže vypnúť aj celý server, ak na ňom nie sú žiadné aktívne hry a hráči.<br />
 
 ### Spustenie servera
-Rovnako ako pri klientovi aj server vyžaduje pre svoje fungovanie CSFML knižnicu, pretože ju využívame pri vzájomnej komunikácií.<br>
-<br>TODO!!!!!!!!!!!!!! Tu tiež v podstate stačí mať CSFML na pc a iba spustiť server, nie?<br> Predpokladáme, že repozitár je naklonovaný a že serverová aplikácia beží na ***frios2.fri.uniza.sk*** servery. Ak sú všetky tieto podmienky splnené, tak už netreba nič nastavovať a len spustiť server.<br />
-Dá sa to pomocou dvoch spôsobov:
+Rovnako ako pri klientovi aj server vyžaduje pre svoje fungovanie CSFML knižnicu, pretože ju využívame pri vzájomnej komunikácií. Rovnako ako pri klientovi, tak je možné spustiť serverovú časť aplikácie cez vývojové prostredie alebo pomocou Makefile.<br>
+
 ```
-TODO!!!!!!!!!!
-1. Pomocou terminálu a Makefilu
+Spustenie pomocou terminálu a Makefilu
     - Otvoríme terminálove okno
-    - Prejdeme do adresára s názvom server
-    - Napišeme príkaz **make**
-    - Následne len spustíme vytvorený súbor pomocou príkazu **./server**
+    - Prejdeme do adresára s názvom server-side
+    - Napišeme príkaz: make
+    - Následne len spustíme vytvorený súbor pomocou príkazu: ./server
     - Prajeme príjemne hranie :)
-2. Pomocou Clionu
-    - Na Clione mame nastavený remote development
-    - Otvoríme adresár server pomocou Clionu
-    - Počkáme, kým sa prenesú súbory na server
-    - Reloadneme CmakeList
-    - Spustíme aplikáciu
-    - Prajeme príjemné hranie :)
 ```
