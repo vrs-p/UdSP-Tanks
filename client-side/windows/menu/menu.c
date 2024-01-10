@@ -162,6 +162,7 @@ void menu_destroy(MENU* menu) {
     menu->window = NULL;
 
     btn_destroy(menu->button);
+    free(menu->button);
     menu->button = NULL;
 
     ls_run_function(menu->textboxes, txtbox_destroy_void);
@@ -180,27 +181,6 @@ void menu_initialize_window(MENU* menu) {
 #undef SCREEN_HEIGHT
 
 bool menu_validate_ip(wchar_t* ip) {
-//    regex_t regex;
-//    int reti;
-//
-//    reti = regcomp(&regex, "^(?:25[0-5]|2[0-4][0-9]|[0-1]?[0-9]{1,2})(?:\\.(?:25[0-5]|2[0-4][0-9]|[0-1]?[0-9]{1,2})){3}$", REG_EXTENDED);
-//
-//    if (reti) {
-//        return false;
-//    }
-//
-//    reti = regexec(&regex, ip, 0, NULL, 0);
-//    if (!reti) {
-//        regfree(&regex);
-//        return true;
-//    } else if (reti == REG_NOMATCH) {
-//        regfree(&regex);
-//        return false;
-//    } else {
-//        regfree(&regex);
-//        return false;
-//    }
-
     char str[16];
     size_t len = wcstombs(str, ip, sizeof(str));
     if (len == (size_t)-1) {

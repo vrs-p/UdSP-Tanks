@@ -64,10 +64,13 @@ void mmenu_create(MMENU* mmenu) {
 
 void mmenu_destroy(MMENU* mmenu) {
     btn_destroy(mmenu->btnCrtServer);
+    free(mmenu->btnCrtServer);
     mmenu->btnCrtServer = NULL;
     btn_destroy(mmenu->btnJoinServer);
+    free(mmenu->btnJoinServer);
     mmenu->btnJoinServer = NULL;
     btn_destroy(mmenu->btnKillServer);
+    free(mmenu->btnKillServer);
     mmenu->btnKillServer = NULL;
 
     sfText_destroy(mmenu->tittle);

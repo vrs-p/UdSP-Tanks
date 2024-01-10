@@ -35,6 +35,7 @@ void txtbox_destroy(TEXTBOX* txtbox) {
 
 void txtbox_destroy_void(void* txtbox) {
     txtbox_destroy(*(TEXTBOX**)txtbox);
+    free(*(TEXTBOX**)txtbox);
 }
 
 void txtbox_set_font(TEXTBOX* txtbox, sfFont* font) {

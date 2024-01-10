@@ -152,7 +152,7 @@ void* app_send_data(void *app) {
 
             sfPacket_clear(appl->packetSend);
             if (!player_killed_get(player) && !player_left_get(player)) {
-                app_handle_player_status(appl, player); // Using the function here
+                app_handle_player_status(appl, player);
             } else if (player_killed_get(player) && !player_left_get(player)) {
                 app_notify_dead_user(appl, player);
             } else if (player_left_get(player) && !player_sent_score_get(player)) {
@@ -173,7 +173,6 @@ void* app_send_data(void *app) {
     return 0;
 }
 
-// Function to handle status message
 static void app_handle_status_message(APPLICATION* app, int pId, float tmpX, float tmpY, int tmpDir, bool pFIred) {
     LINKED_LIST_ITERATOR iterator;
     ls_iterator_init(&iterator, app->players);
@@ -191,7 +190,6 @@ static void app_handle_status_message(APPLICATION* app, int pId, float tmpX, flo
     }
 }
 
-// Function to handle killed message
 static void app_handle_killed_message(APPLICATION* app, int pId, int killer) {
     LINKED_LIST_ITERATOR iterator;
     ls_iterator_init(&iterator, app->players);
@@ -210,7 +208,6 @@ static void app_handle_killed_message(APPLICATION* app, int pId, int killer) {
     }
 }
 
-// Function to handle END message
 void app_handle_end_message(APPLICATION* app, int pId) {
     LINKED_LIST_ITERATOR iterator;
     ls_iterator_init(&iterator, app->players);
@@ -232,7 +229,6 @@ void app_handle_end_message(APPLICATION* app, int pId) {
     }
 }
 
-// Function to receive and process game data
 void* app_receive_data(void *app) {
     APPLICATION* appl = (APPLICATION*)app;
     sfIpAddress ipAddress = sfIpAddress_Any;
@@ -461,7 +457,6 @@ void app_start(APPLICATION *app) {
         pthread_create(&receiveDataThread, NULL, app_receive_data, app);
         pthread_create(&sendDataThread, NULL, app_send_data, app);
 
-        // wait for the end of the threads
         pthread_detach(receiveDataThread);
         pthread_detach(sendDataThread);
     }

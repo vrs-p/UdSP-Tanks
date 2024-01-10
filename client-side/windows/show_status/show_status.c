@@ -55,6 +55,7 @@ void status_create(STATUS_MODAL* shwErr, SERVER_MESSAGE_TYPE* error) {
 
 void status_destroy(STATUS_MODAL* shwError) {
     btn_destroy(shwError->button);
+    free(shwError->button);
     shwError->button = NULL;
 
     sfText_destroy(shwError->errorText);

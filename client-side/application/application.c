@@ -7,7 +7,6 @@
 void app_create(APPLICATION* app) {
     app->socket = sfUdpSocket_create();
     app->map = malloc(sizeof(MAP));
-//    map_create_random(app->map, 555);
 
     app->packetSend = sfPacket_create();
     app->id = 0;
@@ -330,7 +329,6 @@ static void app_check_borders(APPLICATION* app) {
         sfFloatRect tankBounds = sfSprite_getGlobalBounds(tank_get_sprite(app->clientTank));
         sfFloatRect wallBounds = sfRectangleShape_getGlobalBounds(wall);
         sfBool intersection = sfFloatRect_intersects(&tankBounds, &wallBounds, NULL);
-//        sfFloatRect_intersects(&sfSprite_getGlobalBounds(tank_get_sprite(app->clientTank)), sfRectangleShape_getGlobalBounds(wall), NULL)
         if (intersection) {
             switch (tank_get_direction(app->clientTank)) {
                 case UP: {
@@ -408,6 +406,8 @@ static void app_render_score(APPLICATION* app) {
         sfRenderWindow_drawText(app->window, *(sfText**)ls_access_at_2(app->scores, i), NULL);
         i++;
     } while (i < ls_get_size(app->scores));
+
+    free(strScore);
 }
 
 #undef SCREEN_WIDTH
@@ -420,7 +420,9 @@ static void app_update_positions_of_tanks(APPLICATION* app) {
     unsigned short port;
     float posX, posY;
 
-    if (sfUdpSocket_receivePacket(app->socket, packetReceive, &ipAddress, &port) == sfSocketDone) {}
+    if (sfUdpSocket_receivePacket(app->socket, packetReceive, &ipAddress, &port) != sfSocketDone) {
+        fprintf(stderr, "Failed to receive packet from server about my position.\n");
+    }
     sfPacket_clear(packetReceive);
     sfPacket_clear(packetSend);
 
@@ -433,7 +435,7 @@ static void app_update_positions_of_tanks(APPLICATION* app) {
     sfPacket_writeInt32(packetSend, tank_get_direction(app->clientTank));
 
     if (sfUdpSocket_sendPacket(app->socket, packetSend, app->ipAddress, app->port) != sfSocketDone) {
-        fprintf(stderr, "Sending failed.\n");
+        fprintf(stderr, "Failed to send packet to server about my actual position\n");
     }
 
     sfPacket_destroy(packetReceive);
