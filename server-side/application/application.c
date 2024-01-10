@@ -319,9 +319,11 @@ bool app_initialize_socket(APPLICATION *app, unsigned short port) {
 void app_wait_for_clients(APPLICATION *app) {
     srand(time(NULL));
     int count = 0;
+    int numberOfPlayers = app->numberOfPlayers;
+    app->numberOfPlayers = 0;
     int randomSeed = rand();
 
-    while (count < app->numberOfPlayers) {
+    while (count < numberOfPlayers) {
         float positionX, positionY;
         unsigned short tmpPort;
         sfIpAddress tmpIp = sfIpAddress_None; // Initialize to None
@@ -357,7 +359,7 @@ void app_wait_for_clients(APPLICATION *app) {
         sfPacket_writeFloat(app->packetSend, positionY);
         sfPacket_writeInt32(app->packetSend, count + 1);
         sfPacket_writeInt32(app->packetSend, (int)tmpDir);
-        sfPacket_writeInt32(app->packetSend, app->numberOfPlayers);
+        sfPacket_writeInt32(app->packetSend, numberOfPlayers);
         sfPacket_writeInt32(app->packetSend, (int)app->mapType + 1);
         if (app->mapType == RANDOM) {
             sfPacket_writeInt32(app->packetSend, randomSeed);
@@ -375,6 +377,7 @@ void app_wait_for_clients(APPLICATION *app) {
         if (sfUdpSocket_sendPacket(app->socket, app->packetSend, tmpIp, tmpPort) != sfSocketDone) {
             printf("Sending failed\n");
         }
+        app->numberOfPlayers++;
     }
 }
 
