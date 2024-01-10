@@ -125,7 +125,6 @@ void map_create_random(MAP *map, unsigned int seed) {
 void map_destroy_rectangle_shape(void *shape) {
     sfRectangleShape *rShape = *(sfRectangleShape **) shape;
     sfRectangleShape_destroy(rShape);
-//    free(rShape);
 }
 
 void map_destroy(MAP *map) {

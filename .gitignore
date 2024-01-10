@@ -1,5 +1,7 @@
 server-side/.idea
 server-side/cmake-build-debug
+server-side/cmake-build-debug-ubuntu-cloud
 
 client-side/.idea
 client-side/cmake-build-debug
+client-side/cmake-build-debug-ubuntu-cloud

@@ -36,14 +36,12 @@ static bool controller_create_server(SERVER_CONTROLLER* controller, const unsign
 }
 
 static void controller_send_client_response(sfUdpSocket* socket, sfPacket* packet, sfIpAddress address, unsigned short port, SERVER_MESSAGE_TYPE messageType) {
-    char ipAddress_str[11];
-    sfIpAddress_toString(address, ipAddress_str);
     sfPacket_clear(packet);
     messageType++;
     sfPacket_writeInt32(packet, messageType);
 
     if (sfUdpSocket_sendPacket(socket, packet, address, port) != sfSocketDone) {
-        fprintf(stderr, "Cannot send packet to: %s:%d\n", ipAddress_str, port);
+        fprintf(stderr, "Cannot send packet to port: %d\n", port);
     }
 }
 
@@ -129,7 +127,7 @@ void controller_start(SERVER_CONTROLLER *controller) {
             sfPacket_writeInt32(packetSend, activeGames);
             sfPacket_writeInt32(packetSend, activePlayers);
             sfUdpSocket_sendPacket(controller->socket, packetSend, ipAddress, port);
-        } else {
+        } else if (controller_message == KILL_SERVER) {
             if (controller_verify_if_games_are_running(controller)) {
                 controller_send_client_response(controller->socket, packetSend, ipAddress, port, GAMES_ARE_RUNNING);
             } else {
