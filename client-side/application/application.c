@@ -28,6 +28,22 @@ void app_create(APPLICATION* app) {
     tank_create(app->clientTank);
     app->otherTanks = malloc(sizeof(LINKED_LIST));
     ls_create(app->otherTanks, sizeof(TANK*));
+
+    sfVector2f positions[] = {
+            {0, 0},
+            {400, 0},
+            {0, 24},
+            {400, 24}
+    };
+
+    for (int i = 0; i < 4; i++) {
+        sfText* tmpText = sfText_create();
+        sfText_setFont(tmpText, app->font);
+        sfText_setCharacterSize(tmpText, 11);
+        sfText_setFillColor(tmpText, sfWhite);
+        sfText_setPosition(tmpText, positions[i]);
+        ls_push(app->scores, &tmpText);
+    }
 }
 
 void app_destroy(APPLICATION* app) {
@@ -363,22 +379,6 @@ static void app_check_borders(APPLICATION* app) {
 }
 
 static void app_render_score(APPLICATION* app) {
-    sfVector2f positions[] = {
-            {0, 0},
-            {400, 0},
-            {0, 24},
-            {400, 24}
-    };
-
-    for (int i = 0; i < ls_get_size(app->otherTanks) + 1; i++) {
-        sfText* tmpText = sfText_create();
-        sfText_setFont(tmpText, app->font);
-        sfText_setCharacterSize(tmpText, 11);
-        sfText_setFillColor(tmpText, sfWhite);
-        sfText_setPosition(tmpText, positions[i]);
-        ls_push(app->scores, &tmpText);
-    }
-
     wchar_t strPlayerScore[200] = L"";
     wcscat(strPlayerScore, tank_get_player_name(app->clientTank));
     wcscat(strPlayerScore, L": ");
