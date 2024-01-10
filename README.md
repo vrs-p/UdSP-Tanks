@@ -30,7 +30,7 @@ a tak isto aj sieťové komponenty, pomocou ktorých prebieha komunikácia medzi
 7. Prajeme príjemné hranie :)
 ```
 
-## Server - TODO!!!!!!!!
+## Server
 Serverová časť sa stará komúnikáciu s klientmi. Čaká na pripojenie sa všetkých hráčov, posiela začiatočné nastavenia hráčom (ich ID, súradnice, kde sa majú postaviť, ...). Zapisuje skóre a po ukončení hry rozpošle hráčom ich štatistiky.<br />
 Server je ovládaný pomocou server_controller-a. Pomocou neho môže hráč vytvárať a pripájať sa na servery alebo môže vypnúť aj celý server, ak na ňom nie sú žiadné aktívne hry a hráči.<br />
 
