@@ -134,11 +134,6 @@ void controller_get_server_statistics(sfIpAddress serverIp, unsigned short serve
             sfSleep(sfMilliseconds(100));
         }
     }
-//    if (sfUdpSocket_receivePacket(socket, packet, &serverIp, &tmpPort) != sfSocketDone) {
-//        fprintf(stderr, "Cannot send receive\n");
-//        *error = SERVER_IS_OFF; //TODO: fix this!
-//    }
-//    printf("Packet received\n");
 
     if (packetReceived) {
         *activeGames = sfPacket_readInt32(packet);
@@ -151,6 +146,4 @@ void controller_get_server_statistics(sfIpAddress serverIp, unsigned short serve
     sfUdpSocket_destroy(socket);
     sfPacket_destroy(packet);
     sfClock_destroy(timer);
-
-//    *error = STATISTICS;
 }
