@@ -179,7 +179,7 @@ static void app_wait_for_game_settings(APPLICATION* app) {
     unsigned short port;
     int pID, dir;
     float posX, posY;
-    wchar_t name[50];
+    wchar_t name[25];
 
     sfPacket_clear(packetReceive);
 
